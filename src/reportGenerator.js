@@ -167,9 +167,16 @@ function normalizeReport(report) {
   };
 }
 
-async function generateOpenAIReport(meta, visual, filePath, mimetype, openaiSettings) {
-  const imageBase64 = fs.readFileSync(filePath).toString("base64");
+async function generateOpenAIReport(meta, visual, options, openaiSettings) {
+  const files = options.files && options.files.length
+    ? options.files
+    : [{ storedPath: options.filePath, mimetype: options.mimetype, storedName: "imagem-1" }];
   const heuristic = generateHeuristicReport(meta, visual);
+  const imageInputs = files.map((file) => ({
+    type: "input_image",
+    image_url: `data:${file.mimetype};base64,${fs.readFileSync(file.storedPath).toString("base64")}`,
+    detail: "high"
+  }));
   const prompt = `
 Voce e um assistente de redacao medica para cartografia vascular. Analise a imagem estatica enviada e gere um laudo tecnico em portugues do Brasil.
 
@@ -185,6 +192,8 @@ ${JSON.stringify(meta, null, 2)}
 
 Resumo visual computacional:
 ${JSON.stringify({
+    image_count: visual.imageCount || 1,
+    images: visual.images || [],
     width: visual.width,
     height: visual.height,
     format: visual.format,
@@ -217,11 +226,7 @@ Formato esperado:
           role: "user",
           content: [
             { type: "input_text", text: prompt },
-            {
-              type: "input_image",
-              image_url: `data:${mimetype};base64,${imageBase64}`,
-              detail: "high"
-            }
+            ...imageInputs
           ]
         }
       ]
@@ -244,10 +249,10 @@ Formato esperado:
 }
 
 async function generateReport(meta, visual, options = {}) {
-  const { filePath, mimetype, openaiSettings } = options;
+  const { filePath, mimetype, openaiSettings, files } = options;
   if (openaiSettings && openaiSettings.enabled && openaiSettings.apiKey && filePath && mimetype) {
     try {
-      const report = await generateOpenAIReport(meta, visual, filePath, mimetype, openaiSettings);
+      const report = await generateOpenAIReport(meta, visual, { filePath, mimetype, files }, openaiSettings);
       report.observacoes = `${report.observacoes} Gerado com apoio de modelo OpenAI (${openaiSettings.model}).`;
       return { report, engine: `openai:${openaiSettings.model}`, warning: null };
     } catch (error) {

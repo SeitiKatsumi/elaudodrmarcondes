@@ -81,7 +81,7 @@ POST /api/laudo
 
 Campos aceitos:
 
-- `image`: arquivo PNG/JPEG obrigatorio.
+- `image`: um ou mais arquivos PNG/JPEG obrigatorios. Para multiplas imagens, repita o campo `image` no `multipart/form-data`.
 - `nome_paciente` ou `patient_name`.
 - `idade` ou `age`.
 - `sexo` ou `sex`.
@@ -96,6 +96,7 @@ Exemplo:
 curl -X POST "http://localhost:3007/api/laudo" \
   -H "Authorization: Bearer SUA_API_KEY" \
   -F "image=@exame.jpg" \
+  -F "image=@imagem-complementar.png" \
   -F "nome_paciente=Maria Exemplo" \
   -F "idade=58" \
   -F "sexo=F" \

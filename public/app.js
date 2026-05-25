@@ -16,7 +16,7 @@ async function api(path, options = {}) {
     headers: options.body instanceof FormData ? options.headers : { "Content-Type": "application/json", ...(options.headers || {}) }
   });
   const data = await res.json();
-  if (!res.ok || data.success === false) throw new Error(data.error || "Falha na requisicao.");
+  if (!res.ok || data.success === false) throw new Error(data.error || "Falha na requisição.");
   return data;
 }
 
@@ -30,19 +30,19 @@ function reportToText(report) {
   return [
     report.titulo,
     "",
-    "Descricao geral",
+    "Descrição geral",
     report.descricao_geral,
     "",
     "Achados principais",
     ...(report.achados_principais || []).map((item) => `- ${item}`),
     "",
-    "Analise tecnica",
+    "Análise técnica",
     report.analise_tecnica,
     "",
-    "Conclusao",
+    "Conclusão",
     report.conclusao,
     "",
-    "Observacoes",
+    "Observações",
     report.observacoes
   ].join("\n");
 }
@@ -55,7 +55,7 @@ function loginView(error = "") {
           <div class="brand-mark"></div>
           <div>
             <h1>Laudos Dr. Marcondes</h1>
-            <p>MVP medico com IA operacional</p>
+            <p>MVP médico com IA operacional</p>
           </div>
         </div>
         <label>Senha administrativa
@@ -81,10 +81,10 @@ function loginView(error = "") {
 function shell(content) {
   const nav = [
     ["dashboard", "Dashboard"],
-    ["manual", "Geracao manual"],
-    ["history", "Historico"],
-    ["integrations", "APIs de Integracao"],
-    ["settings", "Configuracoes"]
+    ["manual", "Geração manual"],
+    ["history", "Histórico"],
+    ["integrations", "APIs de Integração"],
+    ["settings", "Configurações"]
   ];
   app.innerHTML = `
     <section class="layout">
@@ -125,9 +125,9 @@ function renderDashboard() {
     </div>
     <section class="grid metrics">
       <article class="card"><span class="metric-value">${dash.metrics.total}</span><span class="muted">Laudos gerados</span></article>
-      <article class="card"><span class="metric-value">${dash.metrics.completed}</span><span class="muted">Concluidos</span></article>
+      <article class="card"><span class="metric-value">${dash.metrics.completed}</span><span class="muted">Concluídos</span></article>
       <article class="card"><span class="metric-value">${dash.metrics.errors}</span><span class="muted">Erros</span></article>
-      <article class="card"><span class="metric-value">${dash.metrics.integrations}</span><span class="muted">Integracoes</span></article>
+      <article class="card"><span class="metric-value">${dash.metrics.integrations}</span><span class="muted">Integrações</span></article>
     </section>
     <section class="grid two-col">
       <article class="panel"><h3>Exames recentes</h3>${examTable(dash.recentExams)}</article>
@@ -148,7 +148,7 @@ function examTable(rows) {
             <td>${fmtDate(exam.created_at)}</td>
             <td>${exam.patient_name || exam.external_id || "-"}</td>
             <td>${exam.exam_type || "Cartografia Vascular"}</td>
-            <td><span class="status ${exam.status}">${exam.status}</span></td>
+            <td><span class="status ${exam.status}">${statusLabel(exam.status)}</span></td>
           </tr>
         `).join("")}
       </tbody>
@@ -156,13 +156,18 @@ function examTable(rows) {
   `;
 }
 
+function statusLabel(status) {
+  const labels = { completed: "CONCLUÍDO", error: "ERRO", processing: "PROCESSANDO" };
+  return labels[status] || String(status || "-").toUpperCase();
+}
+
 function renderManual(result = null, error = "", loading = false) {
   shell(`
-    <div class="topbar"><div><h2>Geracao manual</h2><p class="muted">Upload direto para avaliacao e emissao do laudo</p></div></div>
+    <div class="topbar"><div><h2>Geração manual</h2><p class="muted">Upload direto para avaliação e emissão do laudo</p></div></div>
     <section class="grid two-col">
       <form class="panel grid" id="manualForm">
-        <label class="drop full">Imagem PNG ou JPEG
-          <input type="file" name="image" accept="image/png,image/jpeg" required>
+        <label class="drop full">Imagens PNG ou JPEG
+          <input type="file" name="image" accept="image/png,image/jpeg" multiple required>
         </label>
         <div class="form-grid">
           <label>Nome do paciente<input name="patient_name"></label>
@@ -170,15 +175,15 @@ function renderManual(result = null, error = "", loading = false) {
           <label>Sexo<input name="sex"></label>
           <label>Tipo de exame<input name="exam_type" value="Cartografia Vascular"></label>
           <label>Identificador externo<input name="external_id"></label>
-          <label>Medico solicitante<input name="requester_name"></label>
-          <label class="full">Observacoes clinicas<textarea name="clinical_notes"></textarea></label>
+          <label>Médico solicitante<input name="requester_name"></label>
+          <label class="full">Observações clínicas<textarea name="clinical_notes"></textarea></label>
         </div>
         ${error ? `<p style="color: var(--danger)">${error}</p>` : ""}
         <button type="submit" ${loading ? "disabled" : ""}>${loading ? "Gerando laudo..." : "Gerar laudo"}</button>
       </form>
       <article class="panel">
         <h3>Resultado</h3>
-        ${loading ? loaderPanel() : result ? resultPanel(result) : "<p class='muted'>O laudo gerado aparecera aqui.</p>"}
+        ${loading ? loaderPanel() : result ? resultPanel(result) : "<p class='muted'>O laudo gerado aparecerá aqui.</p>"}
       </article>
     </section>
   `);
@@ -203,7 +208,7 @@ function loaderPanel() {
       <div>
         <div class="pulse-loader"></div>
         <strong>Gerando o laudo...</strong>
-        <p class="muted">A imagem esta sendo analisada e o texto medico estruturado esta sendo preparado.</p>
+        <p class="muted">As imagens estão sendo analisadas e o texto médico estruturado está sendo preparado.</p>
       </div>
     </div>
   `;
@@ -243,7 +248,7 @@ function bindReportActions(result) {
 
 function renderHistory() {
   shell(`
-    <div class="topbar"><div><h2>Historico</h2><p class="muted">Ultimos exames processados pela plataforma</p></div><button class="secondary" id="refresh">Atualizar</button></div>
+    <div class="topbar"><div><h2>Histórico</h2><p class="muted">Últimos exames processados pela plataforma</p></div><button class="secondary" id="refresh">Atualizar</button></div>
     <section class="panel">${examTable(state.exams)}</section>
   `);
   document.querySelector("#refresh").addEventListener("click", loadAndRender);
@@ -254,6 +259,7 @@ function integrationInstructions(item) {
   return `curl -X POST "${endpoint}" \\
   -H "Authorization: Bearer SUA_API_KEY" \\
   -F "image=@exame.jpg" \\
+  -F "image=@imagem-complementar.png" \\
   -F "nome_paciente=Paciente Exemplo" \\
   -F "tipo_exame=Cartografia Vascular"`;
 }
@@ -261,16 +267,16 @@ function integrationInstructions(item) {
 function renderIntegrations(newIntegration = null, error = "") {
   const baseUrl = (state.appUrl || "https://laudosdrmarcondes.dna11.com.br").replace(/\/$/, "");
   shell(`
-    <div class="topbar"><div><h2>APIs de Integracao</h2><p class="muted">Crie endpoints autenticados para sistemas externos</p></div></div>
+    <div class="topbar"><div><h2>APIs de Integração</h2><p class="muted">Crie endpoints autenticados para sistemas externos</p></div></div>
     <section class="grid two-col">
       <article class="panel">
-        <h3>Nova integracao</h3>
+        <h3>Nova integração</h3>
         <form class="grid" id="integrationForm">
-          <label>Nome da integracao<input name="name" placeholder="Sistema parceiro, clinica ou origem"></label>
+          <label>Nome da integração<input name="name" placeholder="Sistema parceiro, clínica ou origem"></label>
           ${error ? `<p style="color: var(--danger)">${error}</p>` : ""}
           <button type="submit">Gerar API Key</button>
         </form>
-        ${newIntegration ? `<p>API Key criada:</p><p class="api-key">${newIntegration.api_key}</p><p class="muted">Guarde esta chave agora. Depois ela nao sera exibida novamente.</p>` : ""}
+        ${newIntegration ? `<p>API Key criada:</p><p class="api-key">${newIntegration.api_key}</p><p class="muted">Guarde esta chave agora. Depois ela não será exibida novamente.</p>` : ""}
       </article>
       <article class="panel">
         <h3>Endpoints externos</h3>
@@ -280,16 +286,16 @@ function renderIntegrations(newIntegration = null, error = "") {
             <code>POST ${baseUrl}/api/laudo</code>
           </div>
           <div class="endpoint-item">
-            <b>API por integracao</b>
+            <b>API por integração</b>
             <code>POST ${baseUrl}/api/integrations/{integration_id}/laudo</code>
           </div>
         </div>
-        <h3>Instrucoes de uso</h3>
+        <h3>Instruções de uso</h3>
         <pre class="report">${integrationInstructions({ id: "{integration_id}", appUrl: "https://laudosdrmarcondes.dna11.com.br" })}</pre>
       </article>
     </section>
     <section class="panel">
-      <h3>Integracoes cadastradas</h3>
+      <h3>Integrações cadastradas</h3>
       ${state.integrations.length ? `
         <table>
           <thead><tr><th>Nome</th><th>Endpoint</th><th>Chave</th><th>Chamadas</th><th>Status</th><th>Acoes</th></tr></thead>
@@ -301,7 +307,7 @@ function renderIntegrations(newIntegration = null, error = "") {
                 <td><span class="muted">${endpoint}</span></td>
                 <td>${item.api_key_preview}</td>
                 <td>${item.call_count}</td>
-                <td><span class="status ${item.active ? "" : "error"}">${item.active ? "ativa" : "inativa"}</span></td>
+                <td><span class="status ${item.active ? "" : "error"}">${item.active ? "ATIVA" : "INATIVA"}</span></td>
                 <td class="actions">
                   <button class="secondary" data-copy="${endpoint}">Copiar endpoint</button>
                   <button class="secondary" data-toggle="${item.id}" data-active="${item.active ? "0" : "1"}">${item.active ? "Desativar" : "Ativar"}</button>
@@ -310,7 +316,7 @@ function renderIntegrations(newIntegration = null, error = "") {
             }).join("")}
           </tbody>
         </table>
-      ` : "<p class='muted'>Nenhuma integracao criada.</p>"}
+      ` : "<p class='muted'>Nenhuma integração criada.</p>"}
     </section>
   `);
   document.querySelector("#integrationForm").addEventListener("submit", async (event) => {
@@ -334,15 +340,15 @@ function renderSettings(saved = false, error = "") {
   const settings = state.settings || {};
   shell(`
     <div class="topbar">
-      <div><h2>Configuracoes</h2><p class="muted">Motor de geracao dos laudos e credenciais da API ChatGPT/OpenAI</p></div>
+      <div><h2>Configurações</h2><p class="muted">Motor de geração dos laudos e credenciais da API ChatGPT/OpenAI</p></div>
     </div>
     <section class="grid two-col">
       <form class="panel grid" id="settingsForm">
         <label>
-          Ativar geracao com OpenAI
+          Ativar geração com OpenAI
           <select name="openai_enabled">
             <option value="true" ${settings.openai_enabled ? "selected" : ""}>Ativada</option>
-            <option value="false" ${!settings.openai_enabled ? "selected" : ""}>Desativada, usar heuristica local</option>
+            <option value="false" ${!settings.openai_enabled ? "selected" : ""}>Desativada, usar heurística local</option>
           </select>
         </label>
         <label>
@@ -358,20 +364,20 @@ function renderSettings(saved = false, error = "") {
         </label>
         <label class="full">
           API Key da OpenAI
-          <input name="openai_api_key" type="password" placeholder="${settings.openai_api_key_configured ? "Chave ja configurada. Preencha apenas para substituir." : "sk-..."}">
+          <input name="openai_api_key" type="password" placeholder="${settings.openai_api_key_configured ? "Chave já configurada. Preencha apenas para substituir." : "sk-..."}">
         </label>
         <label class="full" style="display:flex; grid-template-columns:auto 1fr; align-items:center;">
           <input type="checkbox" name="clear_openai_api_key" style="width:auto">
           Remover chave salva
         </label>
-        ${saved ? "<p style='color: var(--green)'>Configuracoes salvas.</p>" : ""}
+        ${saved ? "<p style='color: var(--green)'>Configurações salvas.</p>" : ""}
         ${error ? `<p style="color: var(--danger)">${error}</p>` : ""}
-        <button type="submit">Salvar configuracoes</button>
+        <button type="submit">Salvar configurações</button>
       </form>
       <article class="panel">
         <h3>Como funciona</h3>
-        <p class="muted">Quando ativado, o sistema envia a imagem para a OpenAI Responses API usando entrada visual em base64 e pede um JSON estruturado de laudo. Se a chamada falhar, o laudo ainda e gerado pelo motor heuristico local.</p>
-        <p><b>Status da chave:</b> ${settings.openai_api_key_configured ? "configurada" : "nao configurada"}</p>
+        <p class="muted">Quando ativado, o sistema envia a imagem para a OpenAI Responses API usando entrada visual em base64 e pede um JSON estruturado de laudo. Se a chamada falhar, o laudo ainda é gerado pelo motor heurístico local.</p>
+        <p><b>Status da chave:</b> ${settings.openai_api_key_configured ? "configurada" : "não configurada"}</p>
         <p><b>Modelo atual:</b> ${settings.openai_model || "-"}</p>
         <pre class="report">Variaveis equivalentes no .env:
 OPENAI_API_KEY=sk-...

@@ -32,8 +32,8 @@ const upload = multer({
   }
 });
 const imageUpload = upload.fields([
-  { name: "image", maxCount: 1 },
-  { name: "arquivo", maxCount: 1 }
+  { name: "image", maxCount: 12 },
+  { name: "arquivo", maxCount: 12 }
 ]);
 
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -74,25 +74,31 @@ async function handleLaudo(req, res, routeIntegrationId = null) {
   const examId = uuidv4();
   const meta = cleanMeta(req.body || {});
   const integrationId = routeIntegrationId || (req.integration && req.integration.id) || null;
-  req.file = req.file || (req.files && req.files.image && req.files.image[0]) || (req.files && req.files.arquivo && req.files.arquivo[0]);
+  const uploadedFiles = [
+    ...((req.files && req.files.image) || []),
+    ...((req.files && req.files.arquivo) || [])
+  ];
 
-  if (!req.file) {
-    persistApiCall({ integrationId, examId: null, route: req.path, status: "error", error: "Imagem obrigatoria." });
-    return res.status(400).json({ success: false, error: "Envie uma imagem no campo 'image' ou 'arquivo'." });
+  if (!uploadedFiles.length) {
+    persistApiCall({ integrationId, examId: null, route: req.path, status: "error", error: "Imagem obrigatória." });
+    return res.status(400).json({ success: false, error: "Envie uma ou mais imagens no campo 'image' ou 'arquivo'." });
   }
 
-  const originalName = req.file.originalname || "imagem";
-  const ext = path.extname(originalName).toLowerCase() || (req.file.mimetype === "image/png" ? ".png" : ".jpg");
-  const storedName = `${examId}${ext}`;
-  const storedPath = path.join(config.uploadDir, storedName);
-  fs.renameSync(req.file.path, storedPath);
+  const storedFiles = uploadedFiles.map((file, index) => {
+    const originalName = file.originalname || `imagem-${index + 1}`;
+    const ext = path.extname(originalName).toLowerCase() || (file.mimetype === "image/png" ? ".png" : ".jpg");
+    const storedName = `${examId}-${index + 1}${ext}`;
+    const storedPath = path.join(config.uploadDir, storedName);
+    fs.renameSync(file.path, storedPath);
+    return { originalName, storedName, storedPath, mimetype: file.mimetype };
+  });
 
   db.insert("exams", {
     id: examId,
     external_id: meta.external_id || null,
     integration_id: integrationId,
-    filename: storedName,
-    mimetype: req.file.mimetype,
+    filename: storedFiles.map((file) => file.storedName).join(", "),
+    mimetype: storedFiles.map((file) => file.mimetype).join(", "),
     patient_name: meta.patient_name,
     age: meta.age,
     sex: meta.sex,
@@ -108,10 +114,24 @@ async function handleLaudo(req, res, routeIntegrationId = null) {
   });
 
   try {
-    const visual = await analyzeImage(storedPath);
+    const visuals = await Promise.all(storedFiles.map((file) => analyzeImage(file.storedPath)));
+    const visual = {
+      ...visuals[0],
+      imageCount: visuals.length,
+      images: visuals.map((item, index) => ({
+        index: index + 1,
+        filename: storedFiles[index].storedName,
+        width: item.width,
+        height: item.height,
+        format: item.format,
+        entropy: item.entropy,
+        edgeScore: item.edgeScore
+      }))
+    };
     const generated = await generateReport(meta, visual, {
-      filePath: storedPath,
-      mimetype: req.file.mimetype,
+      files: storedFiles,
+      filePath: storedFiles[0].storedPath,
+      mimetype: storedFiles[0].mimetype,
       openaiSettings: getOpenAISettings()
     });
     const laudo = generated.report;
@@ -122,7 +142,8 @@ async function handleLaudo(req, res, routeIntegrationId = null) {
       entropy: visual.entropy,
       edgeScore: visual.edgeScore,
       generationEngine: generated.engine,
-      generationWarning: generated.warning
+      generationWarning: generated.warning,
+      images: visual.images
     });
 
     db.update("exams", examId, {
@@ -139,6 +160,8 @@ async function handleLaudo(req, res, routeIntegrationId = null) {
       exam_id: meta.external_id || examId,
       internal_exam_id: examId,
       status: "completed",
+      image_count: storedFiles.length,
+      files: storedFiles.map((file) => file.storedName),
       generation_engine: generated.engine,
       generation_warning: generated.warning,
       laudo
@@ -268,6 +291,11 @@ app.post("/api/admin/manual-laudo", requireAdmin, imageUpload, (req, res) => han
 
 app.use((error, req, res, _next) => {
   if (req.file && req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+  if (req.files) {
+    Object.values(req.files).flat().forEach((file) => {
+      if (file && file.path && fs.existsSync(file.path)) fs.unlinkSync(file.path);
+    });
+  }
   const message = error.message || "Erro interno.";
   persistApiCall({ route: req.path, status: "error", error: message });
   res.status(400).json({ success: false, error: message });

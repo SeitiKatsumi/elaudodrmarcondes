@@ -150,6 +150,10 @@ label {
   color: var(--text);
   background: transparent;
   border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .nav button.active, .nav button:hover {
