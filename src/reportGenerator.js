@@ -1,5 +1,4 @@
 const fs = require("fs");
-const sharp = require("sharp");
 
 function formatPatient(meta) {
   const parts = [];
@@ -11,8 +10,7 @@ function formatPatient(meta) {
 }
 
 function dominantTone(stats) {
-  const channels = stats.channels || [];
-  const means = channels.slice(0, 3).map((channel) => channel.mean || 0);
+  const means = stats.means || [0, 0, 0];
   const [r, g, b] = means;
   if (b > r + 12 && b > g + 4) return "predominio de tons frios azulados/cianoticos";
   if (g > r && g > b) return "predominio de codificacao esverdeada";
@@ -28,7 +26,7 @@ function classifyBrightness(mean) {
 
 function buildFindings({ width, height, stats, edgeScore, entropy }) {
   const tone = dominantTone(stats);
-  const brightness = classifyBrightness(stats.channels[0].mean);
+  const brightness = classifyBrightness(stats.means[0]);
   const detail = edgeScore > 0.14
     ? "alta densidade de bordas e transicoes, sugerindo mapa com multiplos segmentos vasculares ou legendas"
     : "densidade moderada de bordas, com delimitacao visual relativamente organizada";
@@ -44,30 +42,66 @@ function buildFindings({ width, height, stats, edgeScore, entropy }) {
   ];
 }
 
-async function analyzeImage(filePath) {
-  const image = sharp(filePath, { failOn: "error" });
-  const metadata = await image.metadata();
-  const stats = await image.stats();
-  const gray = await image.clone().resize({ width: 320, withoutEnlargement: true }).greyscale().raw().toBuffer({ resolveWithObject: true });
+function pngDimensions(buffer) {
+  if (buffer.toString("ascii", 1, 4) !== "PNG") return null;
+  return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20), format: "png" };
+}
 
+function jpegDimensions(buffer) {
+  if (buffer[0] !== 0xff || buffer[1] !== 0xd8) return null;
+  let offset = 2;
+  while (offset < buffer.length) {
+    if (buffer[offset] !== 0xff) break;
+    const marker = buffer[offset + 1];
+    const length = buffer.readUInt16BE(offset + 2);
+    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
+      return { height: buffer.readUInt16BE(offset + 5), width: buffer.readUInt16BE(offset + 7), format: "jpeg" };
+    }
+    offset += 2 + length;
+  }
+  return null;
+}
+
+async function analyzeImage(filePath) {
+  const buffer = fs.readFileSync(filePath);
+  const metadata = pngDimensions(buffer) || jpegDimensions(buffer);
+  if (!metadata) throw new Error("Formato de imagem nao reconhecido.");
+
+  const sample = buffer.subarray(0, Math.min(buffer.length, 240000));
+  const sums = [0, 0, 0];
+  const histogram = new Array(256).fill(0);
   let transitions = 0;
   let total = 0;
-  const { data, info } = gray;
-  for (let y = 0; y < info.height; y += 1) {
-    for (let x = 1; x < info.width; x += 1) {
-      const diff = Math.abs(data[y * info.width + x] - data[y * info.width + x - 1]);
-      if (diff > 28) transitions += 1;
-      total += 1;
+  for (let index = 0; index < sample.length; index += 3) {
+    const r = sample[index] || 0;
+    const g = sample[index + 1] || r;
+    const b = sample[index + 2] || g;
+    sums[0] += r;
+    sums[1] += g;
+    sums[2] += b;
+    const gray = Math.round((r + g + b) / 3);
+    histogram[gray] += 1;
+    if (index >= 3) {
+      const prev = Math.round(((sample[index - 3] || 0) + (sample[index - 2] || 0) + (sample[index - 1] || 0)) / 3);
+      if (Math.abs(gray - prev) > 28) transitions += 1;
     }
+    total += 1;
+  }
+
+  let entropy = 0;
+  for (const count of histogram) {
+    if (!count) continue;
+    const p = count / total;
+    entropy -= p * Math.log2(p);
   }
 
   return {
     width: metadata.width,
     height: metadata.height,
     format: metadata.format,
-    stats,
+    stats: { means: sums.map((sum) => total ? sum / total : 0) },
     edgeScore: total ? transitions / total : 0,
-    entropy: stats.entropy || 0
+    entropy
   };
 }
 

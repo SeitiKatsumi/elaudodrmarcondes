@@ -7,22 +7,8 @@ const defaults = {
   openai_api_key: config.openaiApiKey
 };
 
-function now() {
-  return new Date().toISOString();
-}
-
 function getSetting(key) {
-  const row = db.prepare("SELECT value FROM app_settings WHERE key = ?").get(key);
-  if (row) return row.value || "";
-  return defaults[key] || "";
-}
-
-function setSetting(key, value) {
-  db.prepare(`
-    INSERT INTO app_settings (key, value, updated_at)
-    VALUES (?, ?, ?)
-    ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
-  `).run(key, value == null ? "" : String(value), now());
+  return db.setting(key) || defaults[key] || "";
 }
 
 function getOpenAISettings() {
@@ -45,13 +31,13 @@ function getPublicSettings() {
 
 function updateOpenAISettings(input) {
   if (typeof input.openai_enabled !== "undefined") {
-    setSetting("openai_enabled", input.openai_enabled ? "true" : "false");
+    db.setSetting("openai_enabled", input.openai_enabled ? "true" : "false");
   }
-  if (input.openai_model) setSetting("openai_model", input.openai_model.trim());
+  if (input.openai_model) db.setSetting("openai_model", input.openai_model.trim());
   if (typeof input.openai_api_key === "string" && input.openai_api_key.trim()) {
-    setSetting("openai_api_key", input.openai_api_key.trim());
+    db.setSetting("openai_api_key", input.openai_api_key.trim());
   }
-  if (input.clear_openai_api_key) setSetting("openai_api_key", "");
+  if (input.clear_openai_api_key) db.setSetting("openai_api_key", "");
   return getPublicSettings();
 }
 

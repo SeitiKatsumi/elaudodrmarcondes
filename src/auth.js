@@ -1,5 +1,4 @@
 const crypto = require("crypto");
-const bcrypt = require("bcryptjs");
 const db = require("./db");
 const config = require("./config");
 
@@ -42,7 +41,7 @@ function requireApiKey(req, res, next) {
     return next();
   }
 
-  const integration = db.prepare("SELECT * FROM integrations WHERE api_key_hash = ? AND active = 1").get(tokenHash);
+  const integration = db.list("integrations").find((item) => item.api_key_hash === tokenHash && Number(item.active) === 1);
   if (!integration) return res.status(401).json({ success: false, error: "API Key invalida ou inativa." });
 
   req.integration = integration;
@@ -66,7 +65,6 @@ function previewApiKey(apiKey) {
 }
 
 module.exports = {
-  bcrypt,
   createAdminSessionValue,
   generateApiKey,
   hashApiKeyForStorage,

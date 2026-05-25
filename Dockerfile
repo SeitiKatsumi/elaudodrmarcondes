@@ -1,6 +1,7 @@
 FROM node:20-bookworm-slim
 
 ENV NODE_ENV=production
+ENV PORT=80
 WORKDIR /app
 
 RUN apt-get update \
@@ -14,6 +15,6 @@ COPY . .
 
 RUN mkdir -p /app/data /app/uploads
 
-EXPOSE 3007
+EXPOSE 80
 
 CMD ["npm", "start"]

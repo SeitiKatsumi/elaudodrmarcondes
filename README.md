@@ -183,7 +183,7 @@ docker compose up -d --build
 
 O arquivo `captain-definition` aponta para o `Dockerfile`, portanto o CapRover consegue construir a imagem diretamente do repositorio.
 
-A aplicacao escuta `PORT=3007`, e o CapRover encaminha o trafego externo para essa porta.
+No Dockerfile a aplicacao escuta `PORT=80` por padrao, que e o caminho mais simples para o proxy do CapRover. Para desenvolvimento local, use `PORT=3007` no `.env` ou no `docker-compose.yml`.
 
 ## Seguranca
 
@@ -192,7 +192,7 @@ A aplicacao escuta `PORT=3007`, e o CapRover encaminha o trafego externo para es
 - Use HTTPS em producao.
 - Guarde as API Keys de integracao com seguranca.
 - Desative integracoes que nao devem mais receber chamadas.
-- O SQLite e adequado para o MVP; para alto volume, evolua a camada `src/db.js` para PostgreSQL mantendo o mesmo modelo de entidades.
+- A persistencia local usa arquivo JSON em `/app/data` para evitar dependencias nativas no MVP Docker. Para alto volume, evolua a camada `src/db.js` para SQLite/PostgreSQL mantendo o mesmo modelo de entidades.
 
 ## Estrutura
 

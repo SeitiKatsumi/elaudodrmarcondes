@@ -59,10 +59,15 @@ function cleanMeta(body) {
 }
 
 function persistApiCall({ integrationId, examId, route, status, error }) {
-  db.prepare(`
-    INSERT INTO api_calls (id, integration_id, exam_id, route, status, error, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(uuidv4(), integrationId || null, examId || null, route, status, error || null, now());
+  db.insert("api_calls", {
+    id: uuidv4(),
+    integration_id: integrationId || null,
+    exam_id: examId || null,
+    route,
+    status,
+    error: error || null,
+    created_at: now()
+  });
 }
 
 async function handleLaudo(req, res, routeIntegrationId = null) {
@@ -82,26 +87,25 @@ async function handleLaudo(req, res, routeIntegrationId = null) {
   const storedPath = path.join(config.uploadDir, storedName);
   fs.renameSync(req.file.path, storedPath);
 
-  db.prepare(`
-    INSERT INTO exams (
-      id, external_id, integration_id, filename, mimetype, patient_name, age, sex, exam_type,
-      clinical_notes, requester_name, status, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    examId,
-    meta.external_id || null,
-    integrationId,
-    storedName,
-    req.file.mimetype,
-    meta.patient_name,
-    meta.age,
-    meta.sex,
-    meta.exam_type,
-    meta.clinical_notes,
-    meta.requester_name,
-    "processing",
-    now()
-  );
+  db.insert("exams", {
+    id: examId,
+    external_id: meta.external_id || null,
+    integration_id: integrationId,
+    filename: storedName,
+    mimetype: req.file.mimetype,
+    patient_name: meta.patient_name,
+    age: meta.age,
+    sex: meta.sex,
+    exam_type: meta.exam_type,
+    clinical_notes: meta.clinical_notes,
+    requester_name: meta.requester_name,
+    status: "processing",
+    report_json: null,
+    error: null,
+    visual_summary: null,
+    created_at: now(),
+    completed_at: null
+  });
 
   try {
     const visual = await analyzeImage(storedPath);
@@ -121,9 +125,12 @@ async function handleLaudo(req, res, routeIntegrationId = null) {
       generationWarning: generated.warning
     });
 
-    db.prepare(`
-      UPDATE exams SET status = ?, report_json = ?, visual_summary = ?, completed_at = ? WHERE id = ?
-    `).run("completed", JSON.stringify(laudo), visualSummary, now(), examId);
+    db.update("exams", examId, {
+      status: "completed",
+      report_json: JSON.stringify(laudo),
+      visual_summary: visualSummary,
+      completed_at: now()
+    });
 
     persistApiCall({ integrationId, examId, route: req.path, status: "completed" });
 
@@ -137,8 +144,7 @@ async function handleLaudo(req, res, routeIntegrationId = null) {
       laudo
     });
   } catch (error) {
-    db.prepare("UPDATE exams SET status = ?, error = ?, completed_at = ? WHERE id = ?")
-      .run("error", error.message, now(), examId);
+    db.update("exams", examId, { status: "error", error: error.message, completed_at: now() });
     persistApiCall({ integrationId, examId, route: req.path, status: "error", error: error.message });
     return res.status(422).json({ success: false, error: `Nao foi possivel processar a imagem: ${error.message}` });
   }
@@ -167,17 +173,19 @@ app.get("/api/admin/me", requireAdmin, (_req, res) => {
 });
 
 app.get("/api/admin/dashboard", requireAdmin, (_req, res) => {
-  const total = db.prepare("SELECT COUNT(*) AS count FROM exams").get().count;
-  const completed = db.prepare("SELECT COUNT(*) AS count FROM exams WHERE status = 'completed'").get().count;
-  const errors = db.prepare("SELECT COUNT(*) AS count FROM exams WHERE status = 'error'").get().count;
-  const integrations = db.prepare("SELECT COUNT(*) AS count FROM integrations").get().count;
-  const recentExams = db.prepare("SELECT id, external_id, filename, patient_name, exam_type, status, created_at FROM exams ORDER BY created_at DESC LIMIT 8").all();
-  const recentErrors = db.prepare("SELECT id, error, created_at FROM exams WHERE status = 'error' ORDER BY created_at DESC LIMIT 5").all();
+  const exams = db.list("exams");
+  const integrationsRows = db.list("integrations");
+  const total = exams.length;
+  const completed = exams.filter((exam) => exam.status === "completed").length;
+  const errors = exams.filter((exam) => exam.status === "error").length;
+  const integrations = integrationsRows.length;
+  const recentExams = [...exams].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 8);
+  const recentErrors = exams.filter((exam) => exam.status === "error").sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 5);
   res.json({ success: true, metrics: { total, completed, errors, integrations }, recentExams, recentErrors });
 });
 
 app.get("/api/admin/exams", requireAdmin, (_req, res) => {
-  const exams = db.prepare("SELECT * FROM exams ORDER BY created_at DESC LIMIT 100").all().map((exam) => ({
+  const exams = [...db.list("exams")].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 100).map((exam) => ({
     ...exam,
     report: exam.report_json ? JSON.parse(exam.report_json) : null
   }));
@@ -185,14 +193,18 @@ app.get("/api/admin/exams", requireAdmin, (_req, res) => {
 });
 
 app.get("/api/admin/integrations", requireAdmin, (_req, res) => {
-  const rows = db.prepare(`
-    SELECT i.id, i.name, i.api_key_preview, i.active, i.created_at, i.updated_at,
-      COUNT(c.id) AS call_count
-    FROM integrations i
-    LEFT JOIN api_calls c ON c.integration_id = i.id
-    GROUP BY i.id
-    ORDER BY i.created_at DESC
-  `).all();
+  const calls = db.list("api_calls");
+  const rows = [...db.list("integrations")]
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .map((item) => ({
+      id: item.id,
+      name: item.name,
+      api_key_preview: item.api_key_preview,
+      active: item.active,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+      call_count: calls.filter((call) => call.integration_id === item.id).length
+    }));
   res.json({ success: true, integrations: rows, appUrl: config.appUrl });
 });
 
@@ -201,10 +213,15 @@ app.post("/api/admin/integrations", requireAdmin, (req, res) => {
   if (!name) return res.status(400).json({ success: false, error: "Nome da integracao obrigatorio." });
   const id = uuidv4();
   const apiKey = generateApiKey();
-  db.prepare(`
-    INSERT INTO integrations (id, name, api_key_hash, api_key_preview, active, created_at, updated_at)
-    VALUES (?, ?, ?, ?, 1, ?, ?)
-  `).run(id, name, hashApiKeyForStorage(apiKey), previewApiKey(apiKey), now(), now());
+  db.insert("integrations", {
+    id,
+    name,
+    api_key_hash: hashApiKeyForStorage(apiKey),
+    api_key_preview: previewApiKey(apiKey),
+    active: 1,
+    created_at: now(),
+    updated_at: now()
+  });
   res.json({
     success: true,
     integration: {
@@ -219,15 +236,15 @@ app.post("/api/admin/integrations", requireAdmin, (req, res) => {
 });
 
 app.patch("/api/admin/integrations/:id", requireAdmin, (req, res) => {
-  const integration = db.prepare("SELECT * FROM integrations WHERE id = ?").get(req.params.id);
+  const integration = db.list("integrations").find((item) => item.id === req.params.id);
   if (!integration) return res.status(404).json({ success: false, error: "Integracao nao encontrada." });
   const active = req.body.active === true || req.body.active === 1 || req.body.active === "1" ? 1 : 0;
-  db.prepare("UPDATE integrations SET active = ?, updated_at = ? WHERE id = ?").run(active, now(), req.params.id);
+  db.update("integrations", req.params.id, { active, updated_at: now() });
   res.json({ success: true });
 });
 
 app.get("/api/admin/integrations/:id/calls", requireAdmin, (req, res) => {
-  const calls = db.prepare("SELECT * FROM api_calls WHERE integration_id = ? ORDER BY created_at DESC LIMIT 100").all(req.params.id);
+  const calls = db.list("api_calls").filter((call) => call.integration_id === req.params.id).sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 100);
   res.json({ success: true, calls });
 });
 
