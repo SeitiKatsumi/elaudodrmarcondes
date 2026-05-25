@@ -156,7 +156,7 @@ function examTable(rows) {
   `;
 }
 
-function renderManual(result = null, error = "") {
+function renderManual(result = null, error = "", loading = false) {
   shell(`
     <div class="topbar"><div><h2>Geracao manual</h2><p class="muted">Upload direto para avaliacao e emissao do laudo</p></div></div>
     <section class="grid two-col">
@@ -174,17 +174,18 @@ function renderManual(result = null, error = "") {
           <label class="full">Observacoes clinicas<textarea name="clinical_notes"></textarea></label>
         </div>
         ${error ? `<p style="color: var(--danger)">${error}</p>` : ""}
-        <button type="submit">Gerar laudo</button>
+        <button type="submit" ${loading ? "disabled" : ""}>${loading ? "Gerando laudo..." : "Gerar laudo"}</button>
       </form>
       <article class="panel">
         <h3>Resultado</h3>
-        ${result ? resultPanel(result) : "<p class='muted'>O laudo gerado aparecera aqui.</p>"}
+        ${loading ? loaderPanel() : result ? resultPanel(result) : "<p class='muted'>O laudo gerado aparecera aqui.</p>"}
       </article>
     </section>
   `);
   document.querySelector("#manualForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = new FormData(event.target);
+    renderManual(null, "", true);
     try {
       const data = await api("/api/admin/manual-laudo", { method: "POST", body: form });
       renderManual(data);
@@ -194,6 +195,18 @@ function renderManual(result = null, error = "") {
     }
   });
   bindReportActions(result);
+}
+
+function loaderPanel() {
+  return `
+    <div class="loader-box" role="status" aria-live="polite">
+      <div>
+        <div class="pulse-loader"></div>
+        <strong>Gerando o laudo...</strong>
+        <p class="muted">A imagem esta sendo analisada e o texto medico estruturado esta sendo preparado.</p>
+      </div>
+    </div>
+  `;
 }
 
 function resultPanel(result) {
@@ -246,6 +259,7 @@ function integrationInstructions(item) {
 }
 
 function renderIntegrations(newIntegration = null, error = "") {
+  const baseUrl = (state.appUrl || "https://laudosdrmarcondes.dna11.com.br").replace(/\/$/, "");
   shell(`
     <div class="topbar"><div><h2>APIs de Integracao</h2><p class="muted">Crie endpoints autenticados para sistemas externos</p></div></div>
     <section class="grid two-col">
@@ -259,6 +273,17 @@ function renderIntegrations(newIntegration = null, error = "") {
         ${newIntegration ? `<p>API Key criada:</p><p class="api-key">${newIntegration.api_key}</p><p class="muted">Guarde esta chave agora. Depois ela nao sera exibida novamente.</p>` : ""}
       </article>
       <article class="panel">
+        <h3>Endpoints externos</h3>
+        <div class="endpoint-list">
+          <div class="endpoint-item">
+            <b>API principal</b>
+            <code>POST ${baseUrl}/api/laudo</code>
+          </div>
+          <div class="endpoint-item">
+            <b>API por integracao</b>
+            <code>POST ${baseUrl}/api/integrations/{integration_id}/laudo</code>
+          </div>
+        </div>
         <h3>Instrucoes de uso</h3>
         <pre class="report">${integrationInstructions({ id: "{integration_id}", appUrl: "https://laudosdrmarcondes.dna11.com.br" })}</pre>
       </article>
