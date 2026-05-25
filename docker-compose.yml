@@ -1,0 +1,12 @@
+services:
+  laudos-dr-marcondes:
+    build: .
+    container_name: laudos-dr-marcondes
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "3007:3007"
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
