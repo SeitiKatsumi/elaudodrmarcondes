@@ -14,7 +14,7 @@ function getSetting(key) {
 function getOpenAISettings() {
   return {
     enabled: getSetting("openai_enabled") === "true",
-    model: getSetting("openai_model") || "gpt-5-mini",
+    model: getSetting("openai_model") || "gpt-5.5",
     apiKey: getSetting("openai_api_key")
   };
 }
@@ -25,7 +25,19 @@ function getPublicSettings() {
     openai_enabled: openai.enabled,
     openai_model: openai.model,
     openai_api_key_configured: Boolean(openai.apiKey),
-    available_models: ["gpt-5", "gpt-5-mini", "gpt-4.1", "gpt-4.1-mini", "gpt-4o", "gpt-4o-mini"]
+    available_models: [
+      "gpt-5.5",
+      "gpt-5.4",
+      "gpt-5.4-mini",
+      "gpt-5.4-nano",
+      "gpt-5.1",
+      "gpt-5",
+      "gpt-5-mini",
+      "gpt-4.1",
+      "gpt-4.1-mini",
+      "gpt-4o",
+      "gpt-4o-mini"
+    ]
   };
 }
 

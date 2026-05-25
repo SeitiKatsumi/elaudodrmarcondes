@@ -7,7 +7,7 @@ const config = {
   sessionSecret: process.env.SESSION_SECRET || "dev-session-secret",
   masterApiKey: process.env.API_KEY || "dev-master-api-key",
   openaiApiKey: process.env.OPENAI_API_KEY || "",
-  openaiModel: process.env.OPENAI_MODEL || "gpt-5-mini",
+  openaiModel: process.env.OPENAI_MODEL || "gpt-5.5",
   openaiEnabled: String(process.env.OPENAI_ENABLED || "false").toLowerCase() === "true",
   databasePath: process.env.DATABASE_PATH || "./data/laudos.sqlite",
   uploadDir: process.env.UPLOAD_DIR || "./uploads",

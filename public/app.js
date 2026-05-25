@@ -360,7 +360,7 @@ function renderSettings(saved = false, error = "") {
         </label>
         <label class="full hidden" id="customModelWrap">
           Nome do modelo personalizado
-          <input name="custom_model" placeholder="ex: gpt-5.1-mini">
+          <input name="custom_model" placeholder="ex: gpt-5.5">
         </label>
         <label class="full">
           API Key da OpenAI
@@ -381,7 +381,7 @@ function renderSettings(saved = false, error = "") {
         <p><b>Modelo atual:</b> ${settings.openai_model || "-"}</p>
         <pre class="report">Variaveis equivalentes no .env:
 OPENAI_API_KEY=sk-...
-OPENAI_MODEL=${settings.openai_model || "gpt-5-mini"}
+OPENAI_MODEL=${settings.openai_model || "gpt-5.5"}
 OPENAI_ENABLED=${settings.openai_enabled ? "true" : "false"}</pre>
       </article>
     </section>
