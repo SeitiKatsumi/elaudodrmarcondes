@@ -308,6 +308,17 @@ th {
   word-break: break-all;
 }
 
+.manual-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #d9f6ff;
+  line-height: 1.7;
+}
+
+.manual-list li + li {
+  margin-top: 7px;
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }

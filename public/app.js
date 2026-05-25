@@ -84,7 +84,8 @@ function shell(content) {
     ["manual", "Geração manual"],
     ["history", "Histórico"],
     ["integrations", "APIs de Integração"],
-    ["settings", "Configurações"]
+    ["settings", "Configurações"],
+    ["manualHelp", "Manual de uso"]
   ];
   app.innerHTML = `
     <section class="layout">
@@ -412,6 +413,81 @@ OPENAI_ENABLED=${settings.openai_enabled ? "true" : "false"}</pre>
   });
 }
 
+function renderManualHelp() {
+  const baseUrl = (state.appUrl || "https://laudosdrmarcondes.dna11.com.br").replace(/\/$/, "");
+  shell(`
+    <div class="topbar">
+      <div><h2>Manual de uso</h2><p class="muted">Guia operacional para gerar laudos e integrar sistemas externos</p></div>
+    </div>
+    <section class="grid two-col">
+      <article class="panel">
+        <h3>Fluxo administrativo</h3>
+        <ol class="manual-list">
+          <li>Acesse o painel com a senha administrativa configurada no CapRover.</li>
+          <li>Abra Configurações e confirme se a OpenAI está ativada.</li>
+          <li>Selecione o modelo desejado. Para maior qualidade, use gpt-5.5.</li>
+          <li>Use Geração manual para enviar uma ou mais imagens PNG/JPEG.</li>
+          <li>Revise o laudo gerado antes de qualquer uso clínico.</li>
+        </ol>
+      </article>
+      <article class="panel">
+        <h3>Geração manual</h3>
+        <ol class="manual-list">
+          <li>Clique em Geração manual.</li>
+          <li>Selecione uma ou várias imagens do exame.</li>
+          <li>Preencha dados opcionais como paciente, idade, sexo, tipo de exame e observações clínicas.</li>
+          <li>Clique em Gerar laudo e aguarde o indicador de processamento.</li>
+          <li>Copie o texto ou exporte em TXT/JSON.</li>
+        </ol>
+      </article>
+      <article class="panel">
+        <h3>API externa principal</h3>
+        <p class="muted">Use esta rota quando quiser integrar um sistema externo com uma chave master.</p>
+        <pre class="report">POST ${baseUrl}/api/laudo
+Header:
+Authorization: Bearer SUA_API_KEY
+
+Campos multipart:
+image=@exame-1.jpg
+image=@exame-2.png
+nome_paciente=Paciente Exemplo
+tipo_exame=Cartografia Vascular</pre>
+      </article>
+      <article class="panel">
+        <h3>APIs por integração</h3>
+        <ol class="manual-list">
+          <li>Abra APIs de Integração.</li>
+          <li>Crie uma nova integração com o nome do sistema parceiro.</li>
+          <li>Guarde a API Key exibida uma única vez.</li>
+          <li>Envie imagens para o endpoint exclusivo da integração.</li>
+          <li>Acompanhe chamadas e status no painel.</li>
+        </ol>
+        <pre class="report">POST ${baseUrl}/api/integrations/{integration_id}/laudo
+Header:
+x-api-key: API_KEY_DA_INTEGRACAO</pre>
+      </article>
+      <article class="panel">
+        <h3>Exemplo cURL</h3>
+        <pre class="report">curl -X POST "${baseUrl}/api/laudo" \\
+  -H "Authorization: Bearer SUA_API_KEY" \\
+  -F "image=@exame-1.jpg" \\
+  -F "image=@exame-2.png" \\
+  -F "nome_paciente=Paciente Exemplo" \\
+  -F "tipo_exame=Cartografia Vascular"</pre>
+      </article>
+      <article class="panel">
+        <h3>Segurança e validação</h3>
+        <ul class="manual-list">
+          <li>Não compartilhe API Keys em prints, mensagens ou repositórios.</li>
+          <li>Revogue chaves expostas imediatamente.</li>
+          <li>Todo laudo gerado automaticamente deve ser revisado por médico habilitado.</li>
+          <li>Use volumes persistentes no CapRover para preservar banco e uploads.</li>
+        </ul>
+      </article>
+    </section>
+  `);
+}
+
 async function loadState() {
   const [dashboard, exams, integrations, settings] = await Promise.all([
     api("/api/admin/dashboard"),
@@ -432,6 +508,7 @@ async function render() {
   if (state.view === "history") return renderHistory();
   if (state.view === "integrations") return renderIntegrations();
   if (state.view === "settings") return renderSettings();
+  if (state.view === "manualHelp") return renderManualHelp();
 }
 
 async function loadAndRender() {
