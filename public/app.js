@@ -89,6 +89,17 @@ function shell(content) {
   ];
   app.innerHTML = `
     <section class="layout">
+      <div class="mobile-topbar">
+        <button class="secondary" id="menuToggle" type="button">Menu</button>
+        <div class="brand mobile-brand">
+          <div class="brand-mark"></div>
+          <div>
+            <h1>Elevenmind</h1>
+            <p>Dr. Marcondes</p>
+          </div>
+        </div>
+      </div>
+      <button class="menu-backdrop" id="menuBackdrop" type="button" aria-label="Fechar menu"></button>
       <aside class="sidebar">
         <div class="brand">
           <div class="brand-mark"></div>
@@ -105,9 +116,16 @@ function shell(content) {
       <section class="content">${content}</section>
     </section>
   `;
+  document.querySelector("#menuToggle")?.addEventListener("click", () => {
+    document.body.classList.add("menu-open");
+  });
+  document.querySelector("#menuBackdrop")?.addEventListener("click", () => {
+    document.body.classList.remove("menu-open");
+  });
   document.querySelectorAll("[data-view]").forEach((button) => {
     button.addEventListener("click", async () => {
       state.view = button.dataset.view;
+      document.body.classList.remove("menu-open");
       await render();
     });
   });
