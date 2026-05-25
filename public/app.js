@@ -141,7 +141,17 @@ function renderDashboard() {
 function examTable(rows) {
   if (!rows.length) return "<p class='muted'>Nenhum exame recebido.</p>";
   return `
-    <table>
+    <div class="mobile-exam-list">
+      ${rows.map((exam) => `
+        <article class="mobile-exam-card">
+          <div><span>Data</span><b>${fmtDate(exam.created_at)}</b></div>
+          <div><span>Paciente</span><b>${exam.patient_name || exam.external_id || "-"}</b></div>
+          <div><span>Exame</span><b>${exam.exam_type || "Cartografia Vascular"}</b></div>
+          <div><span>Status</span><span class="status ${exam.status}">${statusLabel(exam.status)}</span></div>
+        </article>
+      `).join("")}
+    </div>
+    <table class="desktop-table">
       <thead><tr><th>Data</th><th>Paciente</th><th>Exame</th><th>Status</th></tr></thead>
       <tbody>
         ${rows.map((exam) => `
