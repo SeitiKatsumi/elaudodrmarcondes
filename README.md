@@ -192,7 +192,7 @@ No Dockerfile a aplicacao escuta `PORT=80` por padrao, que e o caminho mais simp
 - Use HTTPS em producao.
 - Guarde as API Keys de integracao com seguranca.
 - Desative integracoes que nao devem mais receber chamadas.
-- A persistencia local usa arquivo JSON em `/app/data` para evitar dependencias nativas no MVP Docker. Para alto volume, evolua a camada `src/db.js` para SQLite/PostgreSQL mantendo o mesmo modelo de entidades.
+- A persistencia usa SQLite em `/app/data/laudos.sqlite`. Para alto volume, evolua a camada `src/db.js` para PostgreSQL mantendo o mesmo modelo de entidades.
 
 ## Estrutura
 
