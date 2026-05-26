@@ -25,6 +25,17 @@ function fmtDate(value) {
   return new Date(value).toLocaleString("pt-BR");
 }
 
+function fmtDuration(start, end) {
+  if (!start || !end) return "-";
+  const diffMs = new Date(end).getTime() - new Date(start).getTime();
+  if (!Number.isFinite(diffMs) || diffMs < 0) return "-";
+  const seconds = Math.round(diffMs / 1000);
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  return `${minutes}min ${rest}s`;
+}
+
 function reportToText(report) {
   if (!report) return "";
   return [
@@ -176,18 +187,20 @@ function examTable(rows) {
           <div><span>Data</span><b>${fmtDate(exam.created_at)}</b></div>
           <div><span>Paciente</span><b>${exam.patient_name || exam.external_id || "-"}</b></div>
           <div><span>Exame</span><b>${exam.exam_type || "Cartografia Vascular"}</b></div>
+          <div><span>Tempo</span><b>${fmtDuration(exam.created_at, exam.completed_at)}</b></div>
           <div><span>Status</span><span class="status ${exam.status}">${statusLabel(exam.status)}</span></div>
         </article>
       `).join("")}
     </div>
     <table class="desktop-table">
-      <thead><tr><th>Data</th><th>Paciente</th><th>Exame</th><th>Status</th></tr></thead>
+      <thead><tr><th>Data</th><th>Paciente</th><th>Exame</th><th>Tempo</th><th>Status</th></tr></thead>
       <tbody>
         ${rows.map((exam) => `
           <tr>
             <td>${fmtDate(exam.created_at)}</td>
             <td>${exam.patient_name || exam.external_id || "-"}</td>
             <td>${exam.exam_type || "Cartografia Vascular"}</td>
+            <td>${fmtDuration(exam.created_at, exam.completed_at)}</td>
             <td><span class="status ${exam.status}">${statusLabel(exam.status)}</span></td>
           </tr>
         `).join("")}
