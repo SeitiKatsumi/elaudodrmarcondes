@@ -195,8 +195,8 @@ function renderManual(result = null, error = "", loading = false) {
     <div class="topbar"><div><h2>Geração manual</h2><p class="muted">Upload direto para avaliação e emissão do laudo</p></div></div>
     <section class="grid two-col">
       <form class="panel grid" id="manualForm">
-        <label class="drop full">Imagens PNG ou JPEG
-          <input type="file" name="image" accept="image/png,image/jpeg" multiple required>
+        <label class="drop full">Imagens PNG/JPEG ou PDF
+          <input type="file" name="image" accept="image/png,image/jpeg,application/pdf,.pdf" multiple required>
         </label>
         <div class="form-grid">
           <label>Nome do paciente<input name="patient_name"></label>
@@ -237,7 +237,7 @@ function loaderPanel() {
       <div>
         <div class="pulse-loader"></div>
         <strong>Gerando o laudo...</strong>
-        <p class="muted">As imagens estão sendo analisadas e o texto médico estruturado está sendo preparado.</p>
+        <p class="muted">Os arquivos estão sendo analisados e o texto médico estruturado está sendo preparado.</p>
       </div>
     </div>
   `;
@@ -289,6 +289,7 @@ function integrationInstructions(item) {
   -H "Authorization: Bearer SUA_API_KEY" \\
   -F "image=@exame.jpg" \\
   -F "image=@imagem-complementar.png" \\
+  -F "image=@cartografia-completa.pdf" \\
   -F "nome_paciente=Paciente Exemplo" \\
   -F "tipo_exame=Cartografia Vascular"`;
 }
@@ -454,7 +455,7 @@ function renderManualHelp() {
           <li>Acesse o painel com a senha administrativa configurada no CapRover.</li>
           <li>Abra Configurações e confirme se a OpenAI está ativada.</li>
           <li>Selecione o modelo desejado. Para maior qualidade, use gpt-5.5.</li>
-          <li>Use Geração manual para enviar uma ou mais imagens PNG/JPEG.</li>
+          <li>Use Geração manual para enviar uma ou mais imagens PNG/JPEG ou PDFs.</li>
           <li>Revise o laudo gerado antes de qualquer uso clínico.</li>
         </ol>
       </article>
@@ -462,7 +463,7 @@ function renderManualHelp() {
         <h3>Geração manual</h3>
         <ol class="manual-list">
           <li>Clique em Geração manual.</li>
-          <li>Selecione uma ou várias imagens do exame.</li>
+          <li>Selecione uma ou várias imagens/PDFs do exame.</li>
           <li>Preencha dados opcionais como paciente, idade, sexo, tipo de exame e observações clínicas.</li>
           <li>Clique em Gerar laudo e aguarde o indicador de processamento.</li>
           <li>Copie o texto ou exporte em TXT/JSON.</li>
@@ -478,6 +479,7 @@ Authorization: Bearer SUA_API_KEY
 Campos multipart:
 image=@exame-1.jpg
 image=@exame-2.png
+image=@cartografia-completa.pdf
 nome_paciente=Paciente Exemplo
 tipo_exame=Cartografia Vascular</pre>
       </article>
@@ -487,7 +489,7 @@ tipo_exame=Cartografia Vascular</pre>
           <li>Abra APIs de Integração.</li>
           <li>Crie uma nova integração com o nome do sistema parceiro.</li>
           <li>Guarde a API Key exibida uma única vez.</li>
-          <li>Envie imagens para o endpoint exclusivo da integração.</li>
+          <li>Envie imagens ou PDFs para o endpoint exclusivo da integração.</li>
           <li>Acompanhe chamadas e status no painel.</li>
         </ol>
         <pre class="report">POST ${baseUrl}/api/integrations/{integration_id}/laudo
@@ -500,6 +502,7 @@ x-api-key: API_KEY_DA_INTEGRACAO</pre>
   -H "Authorization: Bearer SUA_API_KEY" \\
   -F "image=@exame-1.jpg" \\
   -F "image=@exame-2.png" \\
+  -F "image=@cartografia-completa.pdf" \\
   -F "nome_paciente=Paciente Exemplo" \\
   -F "tipo_exame=Cartografia Vascular"</pre>
       </article>

@@ -1,6 +1,6 @@
 # Laudos Dr. Marcondes
 
-Aplicacao web com API REST para recebimento de imagens PNG/JPEG de cartografia vascular, geracao automatica de laudo textual estruturado, painel administrativo, historico em SQLite e Docker pronto para deploy via CapRover.
+Aplicacao web com API REST para recebimento de imagens PNG/JPEG e PDFs de cartografia vascular, geracao automatica de laudo textual estruturado, painel administrativo, historico em SQLite e Docker pronto para deploy via CapRover.
 
 > MVP: a geracao do laudo usa analise visual heuristica da imagem estatica e templates medicos estruturados. O texto sempre deve ser revisado e validado por profissional medico habilitado antes de uso clinico.
 
@@ -40,7 +40,7 @@ OPENAI_MODEL=gpt-5.5
 OPENAI_ENABLED=false
 DATABASE_PATH=./data/laudos.sqlite
 UPLOAD_DIR=./uploads
-MAX_UPLOAD_MB=12
+MAX_UPLOAD_MB=50
 ```
 
 `API_KEY` e a chave master inicial para o endpoint `/api/laudo`. Novas integracoes geram suas proprias chaves pela interface administrativa.
@@ -81,7 +81,7 @@ POST /api/laudo
 
 Campos aceitos:
 
-- `image`: um ou mais arquivos PNG/JPEG obrigatorios. Para multiplas imagens, repita o campo `image` no `multipart/form-data`.
+- `image`: um ou mais arquivos PNG, JPEG ou PDF obrigatorios. Para multiplos arquivos, repita o campo `image` no `multipart/form-data`.
 - `nome_paciente` ou `patient_name`.
 - `idade` ou `age`.
 - `sexo` ou `sex`.
@@ -97,6 +97,7 @@ curl -X POST "http://localhost:3007/api/laudo" \
   -H "Authorization: Bearer SUA_API_KEY" \
   -F "image=@exame.jpg" \
   -F "image=@imagem-complementar.png" \
+  -F "image=@cartografia-completa.pdf" \
   -F "nome_paciente=Maria Exemplo" \
   -F "idade=58" \
   -F "sexo=F" \
@@ -147,6 +148,7 @@ Exemplo:
 curl -X POST "https://laudosdrmarcondes.dna11.com.br/api/integrations/ID_DA_INTEGRACAO/laudo" \
   -H "x-api-key: API_KEY_DA_INTEGRACAO" \
   -F "image=@exame.png" \
+  -F "image=@cartografia-completa.pdf" \
   -F "nome_paciente=Paciente Externo" \
   -F "identificador_externo=EXAME-987"
 ```

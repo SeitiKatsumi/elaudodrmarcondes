@@ -26,8 +26,8 @@ const upload = multer({
   dest: config.uploadDir,
   limits: { fileSize: config.maxUploadMb * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const allowed = ["image/png", "image/jpeg"];
-    if (!allowed.includes(file.mimetype)) return cb(new Error("Apenas imagens PNG, JPG ou JPEG sao aceitas."));
+    const allowed = ["image/png", "image/jpeg", "application/pdf"];
+    if (!allowed.includes(file.mimetype)) return cb(new Error("Apenas PNG, JPG, JPEG ou PDF são aceitos."));
     cb(null, true);
   }
 });
@@ -81,12 +81,12 @@ async function handleLaudo(req, res, routeIntegrationId = null) {
 
   if (!uploadedFiles.length) {
     persistApiCall({ integrationId, examId: null, route: req.path, status: "error", error: "Imagem obrigatória." });
-    return res.status(400).json({ success: false, error: "Envie uma ou mais imagens no campo 'image' ou 'arquivo'." });
+    return res.status(400).json({ success: false, error: "Envie uma ou mais imagens/PDFs no campo 'image' ou 'arquivo'." });
   }
 
   const storedFiles = uploadedFiles.map((file, index) => {
     const originalName = file.originalname || `imagem-${index + 1}`;
-    const ext = path.extname(originalName).toLowerCase() || (file.mimetype === "image/png" ? ".png" : ".jpg");
+    const ext = path.extname(originalName).toLowerCase() || (file.mimetype === "application/pdf" ? ".pdf" : file.mimetype === "image/png" ? ".png" : ".jpg");
     const storedName = `${examId}-${index + 1}${ext}`;
     const storedPath = path.join(config.uploadDir, storedName);
     fs.renameSync(file.path, storedPath);

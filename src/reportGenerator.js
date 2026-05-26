@@ -25,6 +25,15 @@ function classifyBrightness(mean) {
 }
 
 function buildFindings({ width, height, stats, edgeScore, entropy }) {
+  if (!width && !height) {
+    return [
+      "Documento PDF recebido para análise multimodal.",
+      "O conteúdo pode incluir textos, desenhos, fotos, tabelas, legendas e ilustrações em múltiplas páginas.",
+      "A interpretação detalhada do PDF depende da leitura multimodal pelo modelo OpenAI configurado.",
+      "Os achados devem ser correlacionados com o exame original e validados por profissional habilitado."
+    ];
+  }
+
   const tone = dominantTone(stats);
   const brightness = classifyBrightness(stats.means[0]);
   const detail = edgeScore > 0.14
@@ -62,8 +71,35 @@ function jpegDimensions(buffer) {
   return null;
 }
 
+function pdfMetadata(buffer) {
+  if (buffer.subarray(0, 4).toString("ascii") !== "%PDF") return null;
+  const text = buffer.subarray(0, Math.min(buffer.length, 2_000_000)).toString("latin1");
+  const pageMatches = text.match(/\/Type\s*\/Page\b/g) || [];
+  return {
+    width: null,
+    height: null,
+    format: "pdf",
+    pageCount: pageMatches.length || null,
+    byteLength: buffer.length
+  };
+}
+
 async function analyzeImage(filePath) {
   const buffer = fs.readFileSync(filePath);
+  const pdf = pdfMetadata(buffer);
+  if (pdf) {
+    return {
+      width: pdf.width,
+      height: pdf.height,
+      format: pdf.format,
+      pageCount: pdf.pageCount,
+      byteLength: pdf.byteLength,
+      stats: { means: [0, 0, 0] },
+      edgeScore: 0,
+      entropy: 0
+    };
+  }
+
   const metadata = pngDimensions(buffer) || jpegDimensions(buffer);
   if (!metadata) throw new Error("Formato de imagem nao reconhecido.");
 
@@ -172,16 +208,28 @@ async function generateOpenAIReport(meta, visual, options, openaiSettings) {
     ? options.files
     : [{ storedPath: options.filePath, mimetype: options.mimetype, storedName: "imagem-1" }];
   const heuristic = generateHeuristicReport(meta, visual);
-  const imageInputs = files.map((file) => ({
-    type: "input_image",
-    image_url: `data:${file.mimetype};base64,${fs.readFileSync(file.storedPath).toString("base64")}`,
-    detail: "high"
-  }));
+  const fileInputs = files.map((file) => {
+    const base64 = fs.readFileSync(file.storedPath).toString("base64");
+    if (file.mimetype === "application/pdf") {
+      return {
+        type: "input_file",
+        filename: file.originalName || file.storedName || "documento.pdf",
+        file_data: base64
+      };
+    }
+    return {
+      type: "input_image",
+      image_url: `data:${file.mimetype};base64,${base64}`,
+      detail: "high"
+    };
+  });
   const prompt = `
 Voce e um assistente de redacao medica para cartografia vascular. Analise a imagem estatica enviada e gere um laudo tecnico em portugues do Brasil.
 
 Regras obrigatorias:
 - Retorne somente JSON valido, sem markdown.
+- Leia integralmente todos os PDFs enviados, considerando texto extraido e representacao visual de cada pagina.
+- Analise todos os desenhos, textos, fotos, tabelas, esquemas, legendas, setas, anotacoes e ilustracoes presentes.
 - Nao invente medidas, lateralidade, refluxo, trombose, diametros ou diagnosticos que nao estejam claramente visiveis.
 - Quando houver incerteza, descreva como "sugestivo" ou "nao determinavel pela imagem estatica".
 - Inclua observacao de revisao por medico habilitado.
@@ -226,7 +274,7 @@ Formato esperado:
           role: "user",
           content: [
             { type: "input_text", text: prompt },
-            ...imageInputs
+            ...fileInputs
           ]
         }
       ]

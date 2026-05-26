@@ -11,7 +11,7 @@ const config = {
   openaiEnabled: String(process.env.OPENAI_ENABLED || "false").toLowerCase() === "true",
   databasePath: process.env.DATABASE_PATH || "./data/laudos.sqlite",
   uploadDir: process.env.UPLOAD_DIR || "./uploads",
-  maxUploadMb: Number(process.env.MAX_UPLOAD_MB || 12)
+  maxUploadMb: Number(process.env.MAX_UPLOAD_MB || 50)
 };
 
 module.exports = config;
