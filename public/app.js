@@ -113,7 +113,12 @@ function shell(content) {
           <button class="danger" id="logout">Sair</button>
         </nav>
       </aside>
-      <section class="content">${content}</section>
+      <section class="content">
+        ${content}
+        <footer class="privacy-footer">
+          Sistema privado de apoio à elaboração de laudos. Conteúdo protegido, agente não público e uso orientado à conformidade com LGPD, compliance médico e diretrizes éticas do CRM para tratamento de dados do paciente.
+        </footer>
+      </section>
     </section>
   `;
   document.querySelector("#menuToggle")?.addEventListener("click", () => {
@@ -142,6 +147,12 @@ function renderDashboard() {
       <div><h2>Dashboard</h2><p class="muted">Monitoramento operacional dos laudos automatizados</p></div>
       <button class="secondary" id="refresh">Atualizar</button>
     </div>
+    <section class="privacy-banner">
+      <div>
+        <b>Ambiente privado e protegido</b>
+        <p>Este agente não é público. Os laudos e dados de pacientes são tratados como conteúdo sensível, com uso orientado à LGPD, compliance médico e diretrizes éticas do CRM.</p>
+      </div>
+    </section>
     <section class="grid metrics">
       <article class="card"><span class="metric-value">${dash.metrics.total}</span><span class="muted">Laudos gerados</span></article>
       <article class="card"><span class="metric-value">${dash.metrics.completed}</span><span class="muted">Concluídos</span></article>
