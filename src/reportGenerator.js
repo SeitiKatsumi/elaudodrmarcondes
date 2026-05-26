@@ -224,16 +224,19 @@ async function generateOpenAIReport(meta, visual, options, openaiSettings) {
     };
   });
   const prompt = `
-Voce e um assistente de redacao medica para cartografia vascular. Analise a imagem estatica enviada e gere um laudo tecnico em portugues do Brasil.
+Voce atua como especialista em Angiologia e Cirurgia Vascular, com foco em interpretacao de cartografia vascular, mapeamento vascular e documentacao diagnostica vascular. Sua tarefa nao e apenas ler ou resumir o documento: voce deve interpretar criticamente todos os elementos visuais e textuais enviados e redigir um laudo tecnico medico estruturado em portugues do Brasil.
 
 Regras obrigatorias:
 - Retorne somente JSON valido, sem markdown.
 - Leia integralmente todos os PDFs enviados, considerando texto extraido e representacao visual de cada pagina.
 - Analise todos os desenhos, textos, fotos, tabelas, esquemas, legendas, setas, anotacoes e ilustracoes presentes.
-- Nao invente medidas, lateralidade, refluxo, trombose, diametros ou diagnosticos que nao estejam claramente visiveis.
+- Integre as informacoes visuais e textuais em raciocinio angiologico, descrevendo territorio vascular, lateralidade, segmentos acometidos, padroes de distribuicao, placas, estenoses, oclusoes, aneurismas, refluxos, tromboses, varicosidades, colaterais, alteracoes de fluxo ou outros achados quando estiverem presentes ou explicitamente indicados.
+- Diferencie com clareza achados observados, achados sugeridos e achados nao determinaveis pelo material enviado.
+- Nao invente medidas, lateralidade, refluxo, trombose, diametros, classificacoes ou diagnosticos que nao estejam claramente visiveis, descritos ou inferiveis com boa seguranca.
 - Quando houver incerteza, descreva como "sugestivo" ou "nao determinavel pela imagem estatica".
 - Inclua observacao de revisao por medico habilitado.
-- Use linguagem medica clara, objetiva e elegante.
+- Use linguagem medica clara, objetiva, elegante e compativel com laudo tecnico de especialista.
+- A conclusao deve sintetizar a interpretacao clinico-vascular, priorizando relevancia diagnostica e limitacoes do material.
 
 Dados do exame:
 ${JSON.stringify(meta, null, 2)}
@@ -253,10 +256,10 @@ ${JSON.stringify({
 Formato esperado:
 {
   "titulo": "Laudo de Cartografia Vascular",
-  "descricao_geral": "...",
-  "achados_principais": ["...", "..."],
-  "analise_tecnica": "...",
-  "conclusao": "...",
+  "descricao_geral": "Identificacao do exame, qualidade do material, regiao/territorio vascular avaliado e contexto tecnico.",
+  "achados_principais": ["Achados vasculares principais, cada item com linguagem tecnica e objetiva."],
+  "analise_tecnica": "Interpretacao angiologica detalhada, correlacionando desenhos, textos, fotos, tabelas, marcacoes e padroes vasculares.",
+  "conclusao": "Conclusao estruturada com impressao tecnico-medica e limitacoes.",
   "observacoes": "..."
 }
 `;
