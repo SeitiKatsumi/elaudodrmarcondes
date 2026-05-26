@@ -241,6 +241,9 @@ Regras obrigatorias:
 Dados do exame:
 ${JSON.stringify(meta, null, 2)}
 
+Prompt adicional do agente gerador do laudo:
+${openaiSettings.reportAgentPrompt || "Sem instrucoes adicionais."}
+
 Resumo visual computacional:
 ${JSON.stringify({
     image_count: visual.imageCount || 1,

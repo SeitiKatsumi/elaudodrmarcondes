@@ -400,6 +400,10 @@ function renderSettings(saved = false, error = "") {
           <input type="checkbox" name="clear_openai_api_key" style="width:auto">
           Remover chave salva
         </label>
+        <label class="full">
+          Prompt do agente gerador do laudo
+          <textarea name="report_agent_prompt" style="min-height:220px">${settings.report_agent_prompt || ""}</textarea>
+        </label>
         ${saved ? "<p style='color: var(--green)'>Configurações salvas.</p>" : ""}
         ${error ? `<p style="color: var(--danger)">${error}</p>` : ""}
         <button type="submit">Salvar configurações</button>
@@ -431,7 +435,8 @@ OPENAI_ENABLED=${settings.openai_enabled ? "true" : "false"}</pre>
           openai_enabled: form.get("openai_enabled") === "true",
           openai_model: selected === "custom" ? custom : selected,
           openai_api_key: form.get("openai_api_key"),
-          clear_openai_api_key: form.get("clear_openai_api_key") === "on"
+          clear_openai_api_key: form.get("clear_openai_api_key") === "on",
+          report_agent_prompt: form.get("report_agent_prompt")
         })
       });
       state.settings = data.settings;

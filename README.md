@@ -47,6 +47,8 @@ MAX_UPLOAD_MB=50
 
 `OPENAI_API_KEY`, `OPENAI_MODEL` e `OPENAI_ENABLED` podem ser configurados pelo `.env` ou pela tela **Configuracoes** no painel administrativo. Quando a OpenAI estiver ativada, a aplicacao usa a Responses API com entrada de imagem em base64 para gerar o laudo. Se a chamada falhar, o sistema usa automaticamente o gerador heuristico local como fallback.
 
+A tela **Configuracoes** tambem possui um campo editavel chamado **Prompt do agente gerador do laudo**. Use esse campo para enriquecer as instrucoes clinicas, tecnicas e de estilo do laudo sem alterar o codigo.
+
 ## Rodar localmente
 
 ```bash
