@@ -172,6 +172,8 @@ function generateHeuristicReport(meta, visual) {
 
   return {
     titulo: "Laudo de Cartografia Vascular",
+    introducao: descricao,
+    laudo_tecnico: analise,
     descricao_geral: descricao,
     achados_principais: findings,
     analise_tecnica: analise,
@@ -193,11 +195,15 @@ function extractJson(text) {
 }
 
 function normalizeReport(report) {
+  const introducao = report.introducao || report.descricao_geral || "";
+  const laudoTecnico = report.laudo_tecnico || report.analise_tecnica || "";
   return {
     titulo: report.titulo || "Laudo de Cartografia Vascular",
-    descricao_geral: report.descricao_geral || "",
+    introducao,
+    laudo_tecnico: laudoTecnico,
+    descricao_geral: report.descricao_geral || introducao,
     achados_principais: Array.isArray(report.achados_principais) ? report.achados_principais : [],
-    analise_tecnica: report.analise_tecnica || "",
+    analise_tecnica: report.analise_tecnica || laudoTecnico,
     conclusao: report.conclusao || "",
     observacoes: report.observacoes || "Este laudo foi gerado automaticamente e deve ser validado por profissional medico habilitado."
   };
@@ -259,11 +265,10 @@ ${JSON.stringify({
 Formato esperado:
 {
   "titulo": "Laudo de Cartografia Vascular",
-  "descricao_geral": "Identificacao do exame, qualidade do material, regiao/territorio vascular avaliado e contexto tecnico.",
-  "achados_principais": ["Achados vasculares principais, cada item com linguagem tecnica e objetiva."],
-  "analise_tecnica": "Interpretacao angiologica detalhada, correlacionando desenhos, textos, fotos, tabelas, marcacoes e padroes vasculares.",
-  "conclusao": "Conclusao estruturada com impressao tecnico-medica e limitacoes.",
-  "observacoes": "..."
+  "introducao": "Nome do exame, equipamento e transdutor quando disponiveis; se ausentes, informar como nao especificado no material analisado.",
+  "laudo_tecnico": "Descricao tecnica integrada dos achados vasculares relevantes, substituindo qualquer secao chamada Achados Principais ou Analise Tecnica.",
+  "conclusao": "Conclusao clinico-vascular objetiva, com no maximo 256 caracteres, sem inventar dados ausentes.",
+  "observacoes": "Reforco de que o laudo deve ser revisado e validado por medico habilitado."
 }
 `;
 

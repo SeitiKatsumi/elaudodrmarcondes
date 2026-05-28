@@ -38,6 +38,22 @@ function fmtDuration(start, end) {
 
 function reportToText(report) {
   if (!report) return "";
+  if (report.introducao || report.laudo_tecnico) {
+    return [
+      report.titulo,
+      "",
+      "1. Introdução",
+      report.introducao || report.descricao_geral || "",
+      "",
+      "2. Laudo Técnico",
+      report.laudo_tecnico || report.analise_tecnica || "",
+      "",
+      "3. Conclusão",
+      report.conclusao || "",
+      "",
+      report.observacoes || ""
+    ].filter((item) => item !== null && item !== undefined).join("\n");
+  }
   return [
     report.titulo,
     "",
