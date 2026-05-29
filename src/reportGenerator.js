@@ -239,6 +239,11 @@ Regras obrigatorias:
 - Integre as informacoes visuais e textuais em raciocinio angiologico, descrevendo territorio vascular, lateralidade, segmentos acometidos, padroes de distribuicao, placas, estenoses, oclusoes, aneurismas, refluxos, tromboses, varicosidades, colaterais, alteracoes de fluxo ou outros achados quando estiverem presentes ou explicitamente indicados.
 - Diferencie com clareza achados observados, achados sugeridos e achados nao determinaveis pelo material enviado.
 - Nao invente medidas, lateralidade, refluxo, trombose, diametros, classificacoes ou diagnosticos que nao estejam claramente visiveis, descritos ou inferiveis com boa seguranca.
+- O campo "laudo_tecnico" deve ser sucinto, direto e conter no maximo 512 caracteres.
+- No "laudo_tecnico", cite apenas problemas, achados positivos e informacoes clinicamente relevantes encontrados no material.
+- Nao liste estruturas normais, achados ausentes, possibilidades genericas, limitacoes longas ou o que nao foi encontrado.
+- Nao use floreios, frases de efeito, explicacoes didaticas ou texto defensivo dentro do "laudo_tecnico".
+- Se nao houver achado relevante identificavel, escreva apenas: "Sem achados vasculares relevantes identificáveis no material analisado."
 - Quando houver incerteza, descreva como "sugestivo" ou "nao determinavel pela imagem estatica".
 - Inclua observacao de revisao por medico habilitado.
 - Use linguagem medica clara, objetiva, elegante e compativel com laudo tecnico de especialista.
@@ -266,7 +271,7 @@ Formato esperado:
 {
   "titulo": "Laudo de Cartografia Vascular",
   "introducao": "Nome do exame, equipamento e transdutor quando disponiveis; se ausentes, informar como nao especificado no material analisado.",
-  "laudo_tecnico": "Descricao tecnica integrada dos achados vasculares relevantes, substituindo qualquer secao chamada Achados Principais ou Analise Tecnica.",
+  "laudo_tecnico": "Texto direto, com no maximo 512 caracteres, citando apenas achados positivos relevantes e problemas encontrados.",
   "conclusao": "Conclusao clinico-vascular objetiva, com no maximo 256 caracteres, sem inventar dados ausentes.",
   "observacoes": "Reforco de que o laudo deve ser revisado e validado por medico habilitado."
 }
