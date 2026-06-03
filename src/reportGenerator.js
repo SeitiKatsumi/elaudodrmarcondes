@@ -239,6 +239,12 @@ Regras obrigatorias:
 - Integre as informacoes visuais e textuais em raciocinio angiologico, descrevendo territorio vascular, lateralidade, segmentos acometidos, padroes de distribuicao, placas, estenoses, oclusoes, aneurismas, refluxos, tromboses, varicosidades, colaterais, alteracoes de fluxo ou outros achados quando estiverem presentes ou explicitamente indicados.
 - Diferencie com clareza achados observados, achados sugeridos e achados nao determinaveis pelo material enviado.
 - Nao invente medidas, lateralidade, refluxo, trombose, diametros, classificacoes ou diagnosticos que nao estejam claramente visiveis, descritos ou inferiveis com boa seguranca.
+- Em cartografia venosa de membros inferiores, linhas/trajetos em vermelho sobre veias safenas, tributarias ou varicosidades devem ser interpretados como refluxo/insuficiencia venosa quando a legenda ou a convencao grafica do mapa nao indicar outra coisa.
+- Nao descreva o vermelho apenas como "marcacao vermelha"; traduza para achado diagnostico: refluxo em veia safena magna/parva, tributarias varicosas ou segmento correspondente.
+- Associe medidas ao local anatomico e ao significado provavel: medidas em mm junto ao trajeto venoso indicam calibre/diametro naquele segmento; medidas longitudinais em cm indicam extensao do segmento mapeado/refluxivo quando aplicavel.
+- Ao citar medidas, descreva onde elas estao: por exemplo segmento proximal da safena, coxa, joelho, perna/crural, distal, regiao maleolar ou tributaria, conforme o desenho permitir.
+- Procure lateralidade em marcacoes como D, E, direito, esquerdo, right, left ou pela orientacao anatomica padronizada do desenho quando houver seguranca. Nao confunda "M" com lateralidade; em mapas de perna, "M" geralmente indica face medial.
+- Se houver indicacao de ulcera, descreva como achado clinico-topografico relacionado ao segmento distal/maleolar quando a localizacao for visivel.
 - O campo "laudo_tecnico" deve ser sucinto, direto e conter no maximo 512 caracteres.
 - No "laudo_tecnico", cite apenas problemas, achados positivos e informacoes clinicamente relevantes encontrados no material.
 - Nao liste estruturas normais, achados ausentes, possibilidades genericas, limitacoes longas ou o que nao foi encontrado.
