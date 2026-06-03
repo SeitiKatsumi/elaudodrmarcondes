@@ -247,6 +247,9 @@ Regras obrigatorias:
 - Procure lateralidade em marcacoes como D, E, direito, esquerdo, right, left ou pela orientacao anatomica padronizada do desenho quando houver seguranca. Nao confunda "M" com lateralidade; em mapas de perna, "M" geralmente indica face medial.
 - Se a lateralidade for informada nos metadados do exame, use essa lateralidade como dado do pedido e integre ao laudo.
 - Se a lateralidade nao estiver visivel nem informada, nao escreva "lateralidade nao determinavel" no laudo_tecnico; apenas omita lateralidade ou diga "face medial de membro inferior" quando isso for o achado visivel.
+- Em cartografia arterial cervical/carotidea com desenho frontal bilateral pareado, use a convencao anatomica frontal: estruturas no lado esquerdo da imagem correspondem ao lado direito do paciente, e estruturas no lado direito da imagem correspondem ao lado esquerdo do paciente, salvo rotulo/legenda contraria.
+- Para carótidas em esquema frontal bilateral: eixo desenhado à esquerda da imagem = carotida direita do paciente; eixo desenhado à direita da imagem = carotida esquerda do paciente.
+- Nesses esquemas carotideos, se houver placa ulcerada/estenose em ACI no lado esquerdo da imagem e stent/hiperplasia no lado direito da imagem, descreva como placa ulcerada/estenose em ACI direita e stent/hiperplasia no eixo carotideo esquerdo, salvo indicacao contraria.
 - Se houver indicacao de ulcera, descreva como achado clinico-topografico relacionado ao segmento distal/maleolar quando a localizacao for visivel.
 - O campo "laudo_tecnico" deve ser sucinto, direto e conter no maximo 512 caracteres.
 - No "laudo_tecnico", cite apenas problemas, achados positivos e informacoes clinicamente relevantes encontrados no material.
