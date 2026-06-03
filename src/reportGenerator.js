@@ -5,6 +5,7 @@ function formatPatient(meta) {
   if (meta.patient_name) parts.push(`Paciente: ${meta.patient_name}`);
   if (meta.age) parts.push(`Idade: ${meta.age}`);
   if (meta.sex) parts.push(`Sexo: ${meta.sex}`);
+  if (meta.laterality) parts.push(`Lateralidade: ${meta.laterality}`);
   if (meta.requester_name) parts.push(`Solicitante: ${meta.requester_name}`);
   return parts.length ? parts.join(" | ") : "Dados de identificacao nao informados.";
 }
@@ -244,6 +245,8 @@ Regras obrigatorias:
 - Associe medidas ao local anatomico e ao significado provavel: medidas em mm junto ao trajeto venoso indicam calibre/diametro naquele segmento; medidas longitudinais em cm indicam extensao do segmento mapeado/refluxivo quando aplicavel.
 - Ao citar medidas, descreva onde elas estao: por exemplo segmento proximal da safena, coxa, joelho, perna/crural, distal, regiao maleolar ou tributaria, conforme o desenho permitir.
 - Procure lateralidade em marcacoes como D, E, direito, esquerdo, right, left ou pela orientacao anatomica padronizada do desenho quando houver seguranca. Nao confunda "M" com lateralidade; em mapas de perna, "M" geralmente indica face medial.
+- Se a lateralidade for informada nos metadados do exame, use essa lateralidade como dado do pedido e integre ao laudo.
+- Se a lateralidade nao estiver visivel nem informada, nao escreva "lateralidade nao determinavel" no laudo_tecnico; apenas omita lateralidade ou diga "face medial de membro inferior" quando isso for o achado visivel.
 - Se houver indicacao de ulcera, descreva como achado clinico-topografico relacionado ao segmento distal/maleolar quando a localizacao for visivel.
 - O campo "laudo_tecnico" deve ser sucinto, direto e conter no maximo 512 caracteres.
 - No "laudo_tecnico", cite apenas problemas, achados positivos e informacoes clinicamente relevantes encontrados no material.

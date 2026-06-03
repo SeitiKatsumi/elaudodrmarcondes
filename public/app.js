@@ -245,6 +245,7 @@ function renderManual(result = null, error = "", loading = false) {
           <label>Nome do paciente<input name="patient_name"></label>
           <label>Idade<input name="age"></label>
           <label>Sexo<input name="sex"></label>
+          <label>Lateralidade<select name="laterality"><option value="">Não informado</option><option value="Direito">Direito</option><option value="Esquerdo">Esquerdo</option><option value="Bilateral">Bilateral</option></select></label>
           <label>Tipo de exame<input name="exam_type" value="Cartografia Vascular"></label>
           <label>Identificador externo<input name="external_id"></label>
           <label>Médico solicitante<input name="requester_name"></label>

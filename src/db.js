@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS exams (
   patient_name TEXT,
   age TEXT,
   sex TEXT,
+  laterality TEXT,
   exam_type TEXT,
   clinical_notes TEXT,
   requester_name TEXT,
@@ -70,6 +71,7 @@ const columns = {
     "patient_name",
     "age",
     "sex",
+    "laterality",
     "exam_type",
     "clinical_notes",
     "requester_name",
@@ -82,6 +84,13 @@ const columns = {
   ],
   api_calls: ["id", "integration_id", "exam_id", "route", "status", "error", "created_at"]
 };
+
+function ensureColumn(table, column, definition) {
+  const existing = sqlite.prepare(`PRAGMA table_info(${table})`).all().map((item) => item.name);
+  if (!existing.includes(column)) sqlite.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+}
+
+ensureColumn("exams", "laterality", "TEXT");
 
 function assertCollection(collection) {
   if (!columns[collection]) throw new Error(`Colecao invalida: ${collection}`);
