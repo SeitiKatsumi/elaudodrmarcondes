@@ -1,4 +1,5 @@
 const app = document.querySelector("#app");
+const APP_VERSION = "v1.0.0";
 
 let state = {
   view: "dashboard",
@@ -123,6 +124,7 @@ function shell(content) {
           <div>
             <h1>Elevenmind</h1>
             <p>Dr. Marcondes</p>
+            <span class="app-version">${APP_VERSION}</span>
           </div>
         </div>
       </div>
@@ -133,6 +135,7 @@ function shell(content) {
           <div>
             <h1>Elevenmind</h1>
             <p>Dr. Marcondes</p>
+            <span class="app-version">${APP_VERSION}</span>
           </div>
         </div>
         <nav class="nav">
