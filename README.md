@@ -1,25 +1,25 @@
 # Laudos Dr. Marcondes
 
-Aplicacao web com API REST para recebimento de imagens PNG/JPEG e PDFs de cartografia vascular, geracao automatica de laudo textual estruturado, painel administrativo, historico em SQLite e Docker pronto para deploy via CapRover.
+Aplicação web com API REST para recebimento de imagens PNG/JPEG e PDFs de cartografia vascular, geração automática de laudo textual estruturado, painel administrativo, histórico em SQLite e Docker pronto para deploy via CapRover.
 
-> MVP: a geracao do laudo usa analise visual heuristica da imagem estatica e templates medicos estruturados. O texto sempre deve ser revisado e validado por profissional medico habilitado antes de uso clinico.
+> MVP: a geração do laudo usa análise visual heurística da imagem estática e templates médicos estruturados. O texto sempre deve ser revisado e validado por profissional médico habilitado antes de uso clínico.
 
-Repositorio GitHub: https://github.com/SeitiKatsumi/elaudodrmarcondes
+Repositório GitHub: https://github.com/SeitiKatsumi/elaudodrmarcondes
 
 ## Recursos
 
 - `POST /api/laudo` com upload `multipart/form-data`.
-- Endpoints por integracao: `POST /api/integrations/{integration_id}/laudo`.
-- Autenticacao administrativa por senha.
-- Autenticacao REST por API Key via `Authorization: Bearer` ou `x-api-key`.
-- Dashboard com metricas, exames recentes, erros e historico.
-- Geracao manual de laudos pela interface.
-- Criacao, ativacao e desativacao de integracoes com API Key.
-- Tela de configuracoes para inserir a API Key da OpenAI/ChatGPT, ativar/desativar o motor e selecionar o modelo.
-- Persistencia SQLite para integracoes, chamadas, exames, laudos e erros.
+- Endpoints por integração: `POST /api/integrations/{integration_id}/laudo`.
+- Autenticação administrativa por senha.
+- Autenticação REST por API Key via `Authorization: Bearer` ou `x-api-key`.
+- Dashboard com métricas, exames recentes, erros e histórico.
+- Geração manual de laudos pela interface.
+- Criação, ativação e desativação de integrações com API Key.
+- Tela de configurações para inserir a API Key da OpenAI/ChatGPT, ativar/desativar o motor e selecionar o modelo.
+- Persistência SQLite para integrações, chamadas, exames, laudos e erros.
 - Dockerfile e docker-compose para deploy.
 
-## Variaveis de ambiente
+## Variáveis de ambiente
 
 Copie `.env.example` para `.env`:
 
@@ -43,18 +43,18 @@ UPLOAD_DIR=./uploads
 MAX_UPLOAD_MB=50
 ```
 
-`API_KEY` e a chave master inicial para o endpoint `/api/laudo`. Novas integracoes geram suas proprias chaves pela interface administrativa.
+`API_KEY` é a chave master inicial para o endpoint `/api/laudo`. Novas integrações geram suas próprias chaves pela interface administrativa.
 
-`OPENAI_API_KEY`, `OPENAI_MODEL` e `OPENAI_ENABLED` podem ser configurados pelo `.env` ou pela tela **Configuracoes** no painel administrativo. Quando a OpenAI estiver ativada, a aplicacao usa a Responses API com entrada de imagem em base64 para gerar o laudo. Se a chamada falhar, o sistema usa automaticamente o gerador heuristico local como fallback.
+`OPENAI_API_KEY`, `OPENAI_MODEL` e `OPENAI_ENABLED` podem ser configurados pelo `.env` ou pela tela **Configurações** no painel administrativo. Quando a OpenAI estiver ativada, a aplicação usa a Responses API com entrada de imagem em base64 para gerar o laudo. Se a chamada falhar, o sistema usa automaticamente o gerador heurístico local como fallback.
 
-A tela **Configuracoes** possui controles editaveis para direcionar o agente sem alterar o codigo:
+A tela **Configurações** possui controles editáveis para direcionar o agente sem alterar o código:
 
-- **Nivel de detalhamento do laudo**: objetivo, equilibrado ou detalhado.
-- **Prompt macro do agente**: define o papel clinico do modelo e o objetivo geral do laudo.
-- **Prompt de nuances tecnicas**: define regras de interpretacao, estilo, lateralidade, medidas e preferencias do Dr. Marcondes.
-- **Prompt legado complementar**: mantido para compatibilidade com configuracoes anteriores.
+- **Nível de detalhamento do laudo**: objetivo, equilibrado ou detalhado.
+- **Prompt macro do agente**: define o papel clínico do modelo e o objetivo geral do laudo.
+- **Prompt de nuances técnicas**: define regras de interpretação, estilo, lateralidade, medidas e preferências do Dr. Marcondes.
+- **Prompt legado complementar**: mantido para compatibilidade com configurações anteriores.
 
-As instrucoes configuradas no painel sao enviadas como diretrizes prioritarias para a OpenAI Responses API. O sistema continua exigindo JSON estruturado e revisao por medico habilitado.
+As instruções configuradas no painel são enviadas como diretrizes prioritárias para a OpenAI Responses API. O sistema continua exigindo JSON estruturado e revisão por médico habilitado.
 
 ## Rodar localmente
 
@@ -90,7 +90,7 @@ POST /api/laudo
 
 Campos aceitos:
 
-- `image`: um ou mais arquivos PNG, JPEG ou PDF obrigatorios. Para multiplos arquivos, repita o campo `image` no `multipart/form-data`.
+- `image`: um ou mais arquivos PNG, JPEG ou PDF obrigatórios. Para múltiplos arquivos, repita o campo `image` no `multipart/form-data`.
 - `nome_paciente` ou `patient_name`.
 - `idade` ou `age`.
 - `sexo` ou `sex`.
@@ -123,10 +123,10 @@ Resposta:
   "status": "completed",
   "laudo": {
     "titulo": "Laudo de Cartografia Vascular",
-    "descricao_geral": "Texto completo da analise...",
+    "descricao_geral": "Texto completo da análise...",
     "achados_principais": ["Achado 1", "Achado 2"],
-    "analise_tecnica": "Descricao tecnica detalhada...",
-    "conclusao": "Conclusao clinica baseada na imagem enviada.",
+    "analise_tecnica": "Descrição técnica detalhada...",
+    "conclusao": "Conclusão clínica baseada na imagem enviada.",
     "observacoes": "Este laudo foi gerado automaticamente e deve ser validado por profissional habilitado."
   }
 }
@@ -137,7 +137,7 @@ Erro:
 ```json
 {
   "success": false,
-  "error": "Descricao clara do erro ocorrido."
+  "error": "Descrição clara do erro ocorrido."
 }
 ```
 
@@ -145,7 +145,7 @@ Erro:
 
 No painel, acesse **APIs de Integracao**, informe um nome e gere uma API Key. A chave e exibida apenas uma vez.
 
-Endpoint por integracao:
+Endpoint por integração:
 
 ```http
 POST /api/integrations/{integration_id}/laudo
@@ -195,16 +195,16 @@ docker compose up -d --build
 
 O arquivo `captain-definition` aponta para o `Dockerfile`, portanto o CapRover consegue construir a imagem diretamente do repositorio.
 
-No Dockerfile a aplicacao escuta `PORT=80` por padrao, que e o caminho mais simples para o proxy do CapRover. Para desenvolvimento local, use `PORT=3007` no `.env` ou no `docker-compose.yml`.
+No Dockerfile a aplicação escuta `PORT=80` por padrão, que é o caminho mais simples para o proxy do CapRover. Para desenvolvimento local, use `PORT=3007` no `.env` ou no `docker-compose.yml`.
 
-## Seguranca
+## Segurança
 
 - Troque `ADMIN_PASSWORD`, `SESSION_SECRET` e `API_KEY` antes do deploy.
-- Prefira configurar a API Key da OpenAI por variavel de ambiente ou secret do CapRover. A tela de configuracoes salva a chave no SQLite para facilitar o MVP.
-- Use HTTPS em producao.
-- Guarde as API Keys de integracao com seguranca.
-- Desative integracoes que nao devem mais receber chamadas.
-- A persistencia usa SQLite em `/app/data/laudos.sqlite`. Para alto volume, evolua a camada `src/db.js` para PostgreSQL mantendo o mesmo modelo de entidades.
+- Prefira configurar a API Key da OpenAI por variável de ambiente ou secret do CapRover. A tela de configurações salva a chave no SQLite para facilitar o MVP.
+- Use HTTPS em produção.
+- Guarde as API Keys de integração com segurança.
+- Desative integrações que não devem mais receber chamadas.
+- A persistência usa SQLite em `/app/data/laudos.sqlite`. Para alto volume, evolua a camada `src/db.js` para PostgreSQL mantendo o mesmo modelo de entidades.
 
 ## Estrutura
 

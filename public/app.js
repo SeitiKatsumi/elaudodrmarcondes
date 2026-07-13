@@ -10,6 +10,51 @@ let state = {
   selectedIntegrationCalls: []
 };
 
+const PROMPT_HELP = {
+  macro: {
+    title: "Prompt macro do agente",
+    body: `
+      <p>Define a identidade principal do agente e o objetivo global do laudo. É aqui que você diz qual papel médico o sistema deve assumir e qual tipo de resultado deve entregar.</p>
+      <h4>Use para orientar</h4>
+      <ul>
+        <li>Especialidade do agente: Angiologia, Cirurgia Vascular, Ultrassonografia Vascular.</li>
+        <li>Postura de análise: não resumir, interpretar criticamente e integrar imagem, texto e medidas.</li>
+        <li>Finalidade: produzir laudo médico técnico para revisão do especialista.</li>
+      </ul>
+      <h4>Evite colocar aqui</h4>
+      <p>Regras muito específicas de cores, lateralidade, medidas ou estilo. Essas instruções funcionam melhor no prompt de nuances.</p>
+    `
+  },
+  nuance: {
+    title: "Prompt de nuances técnicas",
+    body: `
+      <p>Controla as regras clínicas finas e as preferências do Dr. Marcondes. É o campo mais importante para ajustar como o agente interpreta cada tipo de cartografia.</p>
+      <h4>Use para definir</h4>
+      <ul>
+        <li>Como interpretar vermelho, azul, setas, legendas, placas, refluxos, estenoses, stents e úlceras.</li>
+        <li>Como tratar lateralidade: D/E, direito/esquerdo, convenção anatômica frontal e siglas como ACID.</li>
+        <li>Como associar medidas em mm ou cm ao segmento vascular correto.</li>
+        <li>Quanto o laudo deve ser direto, detalhado, objetivo ou mais descritivo.</li>
+      </ul>
+      <h4>Boa prática</h4>
+      <p>Escreva regras afirmativas e objetivas. Exemplo: "em cartografia venosa, trajetos vermelhos sobre safena indicam refluxo quando não houver legenda contrária".</p>
+    `
+  },
+  legacy: {
+    title: "Prompt legado complementar",
+    body: `
+      <p>Campo mantido para compatibilidade com configurações antigas. Ele pode complementar os dois prompts principais, mas não deve ser o lugar central das regras novas.</p>
+      <h4>Quando usar</h4>
+      <ul>
+        <li>Para manter um prompt antigo que já funcionava bem.</li>
+        <li>Para testar uma instrução temporária sem misturar com a diretriz macro ou as nuances fixas.</li>
+      </ul>
+      <h4>Recomendação</h4>
+      <p>Para novos ajustes permanentes, prefira editar o prompt de nuances técnicas. Assim a configuração fica mais clara para outras pessoas.</p>
+    `
+  }
+};
+
 async function api(path, options = {}) {
   const res = await fetch(path, {
     credentials: "include",
@@ -319,6 +364,28 @@ function bindReportActions(result) {
   document.querySelector("[data-export-json]")?.addEventListener("click", () => download("laudo.json", json, "application/json"));
 }
 
+function bindPromptHelp() {
+  const modal = document.querySelector("#promptHelpModal");
+  const title = document.querySelector("#promptHelpTitle");
+  const body = document.querySelector("#promptHelpBody");
+  if (!modal || !title || !body) return;
+
+  const close = () => modal.classList.add("hidden");
+  document.querySelectorAll("[data-prompt-help]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const content = PROMPT_HELP[button.dataset.promptHelp];
+      if (!content) return;
+      title.textContent = content.title;
+      body.innerHTML = content.body;
+      modal.classList.remove("hidden");
+    });
+  });
+  document.querySelector("[data-close-help]")?.addEventListener("click", close);
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) close();
+  });
+}
+
 function renderHistory() {
   shell(`
     <div class="topbar"><div><h2>Histórico</h2><p class="muted">Últimos exames processados pela plataforma</p></div><button class="secondary" id="refresh">Atualizar</button></div>
@@ -433,7 +500,7 @@ function renderSettings(saved = false, error = "") {
           </select>
         </label>
         <label>
-          Nivel de detalhamento do laudo
+          Nível de detalhamento do laudo
           <select name="report_detail_level">
             <option value="detalhado" ${settings.report_detail_level === "detalhado" ? "selected" : ""}>Detalhado e rico</option>
             <option value="equilibrado" ${settings.report_detail_level === "equilibrado" ? "selected" : ""}>Equilibrado</option>
@@ -453,15 +520,15 @@ function renderSettings(saved = false, error = "") {
           Remover chave salva
         </label>
         <label class="full">
-          Prompt macro do agente
+          <span class="field-title">Prompt macro do agente <button class="help-button" type="button" data-prompt-help="macro" aria-label="Ajuda sobre prompt macro">?</button></span>
           <textarea name="report_macro_prompt" style="min-height:180px">${settings.report_macro_prompt || ""}</textarea>
         </label>
         <label class="full">
-          Prompt de nuances tecnicas e preferencias do Dr. Marcondes
+          <span class="field-title">Prompt de nuances técnicas e preferências do Dr. Marcondes <button class="help-button" type="button" data-prompt-help="nuance" aria-label="Ajuda sobre prompt de nuances">?</button></span>
           <textarea name="report_nuance_prompt" style="min-height:260px">${settings.report_nuance_prompt || settings.report_agent_prompt || ""}</textarea>
         </label>
         <label class="full">
-          Prompt legado complementar
+          <span class="field-title">Prompt legado complementar <button class="help-button" type="button" data-prompt-help="legacy" aria-label="Ajuda sobre prompt legado">?</button></span>
           <textarea name="report_agent_prompt" style="min-height:140px">${settings.report_agent_prompt || ""}</textarea>
         </label>
         ${saved ? "<p style='color: var(--green)'>Configurações salvas.</p>" : ""}
@@ -470,20 +537,28 @@ function renderSettings(saved = false, error = "") {
       </form>
       <article class="panel">
         <h3>Como funciona</h3>
-        <p class="muted">Quando ativado, o sistema envia a imagem para a OpenAI Responses API usando entrada visual em base64 e pede um JSON estruturado de laudo. Se a chamada falhar, o laudo ainda é gerado pelo motor heurístico local.</p>
+        <p class="muted">Quando ativado, o sistema envia os arquivos para a OpenAI Responses API e usa duas camadas de direção: um prompt macro para o papel do especialista e um prompt de nuances para regras clínicas, estilo e preferências do Dr. Marcondes. Se a chamada falhar, o laudo ainda é gerado pelo motor heurístico local.</p>
         <p><b>Status da chave:</b> ${settings.openai_api_key_configured ? "configurada" : "não configurada"}</p>
         <p><b>Modelo atual:</b> ${settings.openai_model || "-"}</p>
         <p><b>Detalhamento:</b> ${settings.report_detail_level || "detalhado"}</p>
-        <pre class="report">Variaveis equivalentes no .env:
+        <pre class="report">Variáveis equivalentes no .env:
 OPENAI_API_KEY=sk-...
 OPENAI_MODEL=${settings.openai_model || "gpt-5.5"}
 OPENAI_ENABLED=${settings.openai_enabled ? "true" : "false"}</pre>
       </article>
     </section>
+    <div class="modal-backdrop hidden" id="promptHelpModal" role="dialog" aria-modal="true" aria-labelledby="promptHelpTitle">
+      <article class="modal-card">
+        <button class="modal-close" type="button" data-close-help aria-label="Fechar ajuda">×</button>
+        <h3 id="promptHelpTitle"></h3>
+        <div class="modal-body" id="promptHelpBody"></div>
+      </article>
+    </div>
   `);
   const select = document.querySelector("#modelSelect");
   const customWrap = document.querySelector("#customModelWrap");
   select.addEventListener("change", () => customWrap.classList.toggle("hidden", select.value !== "custom"));
+  bindPromptHelp();
   document.querySelector("#settingsForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = new FormData(event.target);
@@ -537,6 +612,27 @@ function renderManualHelp() {
           <li>Clique em Gerar laudo e aguarde o indicador de processamento.</li>
           <li>Copie o texto ou exporte em TXT/JSON.</li>
         </ol>
+      </article>
+      <article class="panel">
+        <h3>Parametrização do agente</h3>
+        <ol class="manual-list">
+          <li>Abra Configurações para ajustar como a IA deve interpretar e escrever os laudos.</li>
+          <li>Use Nível de detalhamento para controlar o tamanho e a profundidade do texto: objetivo, equilibrado ou detalhado.</li>
+          <li>No Prompt macro, defina o papel do agente, por exemplo: médico especialista em Angiologia, Cirurgia Vascular e Ultrassonografia Vascular.</li>
+          <li>No Prompt de nuances técnicas, coloque regras específicas de interpretação: cores, lateralidade, medidas, refluxo, estenose, placas, stents, úlceras e estilo do texto.</li>
+          <li>Use o Prompt legado apenas para manter instruções antigas ou testar uma orientação temporária.</li>
+          <li>Clique no botão ? ao lado de cada prompt para abrir uma explicação didática sobre aquele campo.</li>
+        </ol>
+      </article>
+      <article class="panel">
+        <h3>Boas práticas de prompt</h3>
+        <ul class="manual-list">
+          <li>Escreva regras diretas e afirmativas, como: "trajetos vermelhos sobre safenas indicam refluxo quando não houver legenda contrária".</li>
+          <li>Evite comandos contraditórios, como pedir laudo muito detalhado e ao mesmo tempo limitar o texto a poucas linhas.</li>
+          <li>Inclua exemplos de interpretação quando notar erro recorrente em um tipo de exame.</li>
+          <li>Não coloque chaves, senhas, dados sensíveis ou informações de pacientes dentro dos prompts.</li>
+          <li>Após alterar os prompts, gere um laudo de teste e revise se o estilo ficou adequado antes de usar em rotina.</li>
+        </ul>
       </article>
       <article class="panel">
         <h3>API externa principal</h3>

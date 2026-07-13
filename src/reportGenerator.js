@@ -7,7 +7,7 @@ function formatPatient(meta) {
   if (meta.sex) parts.push(`Sexo: ${meta.sex}`);
   if (meta.laterality) parts.push(`Lateralidade: ${meta.laterality}`);
   if (meta.requester_name) parts.push(`Solicitante: ${meta.requester_name}`);
-  return parts.length ? parts.join(" | ") : "Dados de identificacao nao informados.";
+  return parts.length ? parts.join(" | ") : "Dados de identificação não informados.";
 }
 
 function dominantTone(stats) {
@@ -38,8 +38,8 @@ function buildFindings({ width, height, stats, edgeScore, entropy }) {
   const tone = dominantTone(stats);
   const brightness = classifyBrightness(stats.means[0]);
   const detail = edgeScore > 0.14
-    ? "alta densidade de bordas e transicoes, sugerindo mapa com multiplos segmentos vasculares ou legendas"
-    : "densidade moderada de bordas, com delimitacao visual relativamente organizada";
+    ? "alta densidade de bordas e transições, sugerindo mapa com múltiplos segmentos vasculares ou legendas"
+    : "densidade moderada de bordas, com delimitação visual relativamente organizada";
   const texture = entropy > 6.2
     ? "heterogeneidade visual elevada, com variacao importante de cores e texturas"
     : "heterogeneidade visual moderada, sem dispersao extrema dos padroes cromaticos";
@@ -102,7 +102,7 @@ async function analyzeImage(filePath) {
   }
 
   const metadata = pngDimensions(buffer) || jpegDimensions(buffer);
-  if (!metadata) throw new Error("Formato de imagem nao reconhecido.");
+  if (!metadata) throw new Error("Formato de imagem não reconhecido.");
 
   const sample = buffer.subarray(0, Math.min(buffer.length, 240000));
   const sums = [0, 0, 0];
@@ -147,8 +147,8 @@ function generateHeuristicReport(meta, visual) {
   const findings = buildFindings(visual);
   const identification = formatPatient(meta);
   const clinicalNotes = meta.clinical_notes
-    ? `Observacoes clinicas informadas: ${meta.clinical_notes}.`
-    : "Nao foram informadas observacoes clinicas complementares.";
+    ? `Observações clínicas informadas: ${meta.clinical_notes}.`
+    : "Não foram informadas observações clínicas complementares.";
 
   const descricao = [
     `Exame analisado automaticamente: ${examType}.`,
@@ -160,15 +160,15 @@ function generateHeuristicReport(meta, visual) {
 
   const analise = [
     "A avaliacao automatizada identificou distribuicao espacial organizada dos sinais visuais, com contraste suficiente para descricao macroscospica dos segmentos representados.",
-    "Os padroes cromaticos e a densidade de transicoes sugerem presenca de marcacoes vasculares, possiveis trajetos superficiais, regioes de interesse hemodinamico ou anotacoes tecnicas do exame.",
-    "Nao e possivel, por este MVP, substituir a mensuracao ultrassonografica direta, a avaliacao dinamica do fluxo, compressibilidade, refluxo ou correlacao doppler espectral.",
-    "A interpretacao final deve considerar lateralidade, escala, legenda, padronizacao do equipamento, exame fisico e historia clinica."
+    "Os padrões cromáticos e a densidade de transições sugerem presença de marcações vasculares, possíveis trajetos superficiais, regiões de interesse hemodinâmico ou anotações técnicas do exame.",
+    "Não é possível, por este MVP, substituir a mensuração ultrassonográfica direta, a avaliação dinâmica do fluxo, compressibilidade, refluxo ou correlação Doppler espectral.",
+    "A interpretação final deve considerar lateralidade, escala, legenda, padronização do equipamento, exame físico e história clínica."
   ].join(" ");
 
   const conclusao = [
     `Laudo preliminar automatizado de ${examType.toLowerCase()} com descricao visual estruturada da imagem enviada.`,
     "Ha elementos graficos suficientes para documentacao tecnica, sem determinacao diagnostica definitiva isolada pela imagem estatica.",
-    "Recomenda-se revisao integral por medico habilitado antes de qualquer conduta clinica ou liberacao assistencial."
+    "Recomenda-se revisão integral por médico habilitado antes de qualquer conduta clínica ou liberação assistencial."
   ].join(" ");
 
   return {
@@ -179,7 +179,7 @@ function generateHeuristicReport(meta, visual) {
     achados_principais: findings,
     analise_tecnica: analise,
     conclusao,
-    observacoes: "Este laudo foi gerado automaticamente a partir de imagem estatica e deve ser revisado, corrigido quando necessario e validado por profissional medico habilitado."
+    observacoes: "Este laudo foi gerado automaticamente a partir de imagem estática e deve ser revisado, corrigido quando necessário e validado por profissional médico habilitado."
   };
 }
 
@@ -190,7 +190,7 @@ function extractJson(text) {
     return JSON.parse(trimmed);
   } catch (_err) {
     const match = trimmed.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("Resposta do modelo nao contem JSON valido.");
+    if (!match) throw new Error("Resposta do modelo não contém JSON válido.");
     return JSON.parse(match[0]);
   }
 }
@@ -206,19 +206,19 @@ function normalizeReport(report) {
     achados_principais: Array.isArray(report.achados_principais) ? report.achados_principais : [],
     analise_tecnica: report.analise_tecnica || laudoTecnico,
     conclusao: report.conclusao || "",
-    observacoes: report.observacoes || "Este laudo foi gerado automaticamente e deve ser validado por profissional medico habilitado."
+    observacoes: report.observacoes || "Este laudo foi gerado automaticamente e deve ser validado por profissional médico habilitado."
   };
 }
 
 function detailGuidance(level) {
   const normalized = String(level || "detalhado").toLowerCase();
   if (normalized === "objetivo") {
-    return "Nivel de detalhamento: objetivo. Produza texto direto, sem floreios, mas inclua diagnostico topografico, lateralidade, segmentos e medidas relevantes. Laudo tecnico sugerido entre 700 e 1100 caracteres quando houver achados.";
+    return "Nível de detalhamento: objetivo. Produza texto direto, sem floreios, mas inclua diagnóstico topográfico, lateralidade, segmentos e medidas relevantes. Laudo técnico sugerido entre 700 e 1100 caracteres quando houver achados.";
   }
   if (normalized === "equilibrado") {
-    return "Nivel de detalhamento: equilibrado. Produza analise completa sem excesso, com diagnostico, topografia, lateralidade, segmentos e medidas relevantes. Laudo tecnico sugerido entre 1000 e 1600 caracteres quando houver achados.";
+    return "Nível de detalhamento: equilibrado. Produza análise completa sem excesso, com diagnóstico, topografia, lateralidade, segmentos e medidas relevantes. Laudo técnico sugerido entre 1000 e 1600 caracteres quando houver achados.";
   }
-  return "Nivel de detalhamento: detalhado. Produza laudo rico e clinicamente util, com raciocinio vascular, topografia, lateralidade, segmentos, medidas, interpretacao e limitacoes relevantes. Laudo tecnico sugerido entre 1500 e 2400 caracteres quando houver achados.";
+  return "Nível de detalhamento: detalhado. Produza laudo rico e clinicamente útil, com raciocínio vascular, topografia, lateralidade, segmentos, medidas, interpretação e limitações relevantes. Laudo técnico sugerido entre 1500 e 2400 caracteres quando houver achados.";
 }
 
 async function generateOpenAIReport(meta, visual, options, openaiSettings) {
@@ -250,35 +250,35 @@ ${openaiSettings.reportNuancePrompt || openaiSettings.reportAgentPrompt || "Sem 
 ${detailGuidance(openaiSettings.reportDetailLevel)}
 
 Regras obrigatorias:
-- Retorne somente JSON valido, sem markdown.
-- Leia integralmente todos os PDFs enviados, considerando texto extraido e representacao visual de cada pagina.
-- Analise todos os desenhos, textos, fotos, tabelas, esquemas, legendas, setas, anotacoes e ilustracoes presentes.
-- Integre as informacoes visuais e textuais em raciocinio angiologico, descrevendo territorio vascular, lateralidade, segmentos acometidos, padroes de distribuicao, placas, estenoses, oclusoes, aneurismas, refluxos, tromboses, varicosidades, colaterais, alteracoes de fluxo ou outros achados quando estiverem presentes ou explicitamente indicados.
-- Diferencie com clareza achados observados, achados sugeridos e achados nao determinaveis pelo material enviado.
-- Nao invente medidas, lateralidade, refluxo, trombose, diametros, classificacoes ou diagnosticos que nao estejam claramente visiveis, descritos ou inferiveis com boa seguranca.
-- Em cartografia venosa de membros inferiores, linhas/trajetos em vermelho sobre veias safenas, tributarias ou varicosidades devem ser interpretados como refluxo/insuficiencia venosa quando a legenda ou a convencao grafica do mapa nao indicar outra coisa.
-- Nao descreva o vermelho apenas como "marcacao vermelha"; traduza para achado diagnostico: refluxo em veia safena magna/parva, tributarias varicosas ou segmento correspondente.
-- Associe medidas ao local anatomico e ao significado provavel: medidas em mm junto ao trajeto venoso indicam calibre/diametro naquele segmento; medidas longitudinais em cm indicam extensao do segmento mapeado/refluxivo quando aplicavel.
-- Ao citar medidas, descreva onde elas estao: por exemplo segmento proximal da safena, coxa, joelho, perna/crural, distal, regiao maleolar ou tributaria, conforme o desenho permitir.
-- Procure lateralidade em marcacoes como D, E, direito, esquerdo, right, left ou pela orientacao anatomica padronizada do desenho quando houver seguranca. Nao confunda "M" com lateralidade; em mapas de perna, "M" geralmente indica face medial.
+- Retorne somente JSON válido, sem markdown.
+- Leia integralmente todos os PDFs enviados, considerando texto extraído e representação visual de cada página.
+- Analise todos os desenhos, textos, fotos, tabelas, esquemas, legendas, setas, anotações e ilustrações presentes.
+- Integre as informações visuais e textuais em raciocínio angiológico, descrevendo território vascular, lateralidade, segmentos acometidos, padrões de distribuição, placas, estenoses, oclusões, aneurismas, refluxos, tromboses, varicosidades, colaterais, alterações de fluxo ou outros achados quando estiverem presentes ou explicitamente indicados.
+- Diferencie com clareza achados observados, achados sugeridos e achados não determináveis pelo material enviado.
+- Não invente medidas, lateralidade, refluxo, trombose, diâmetros, classificações ou diagnósticos que não estejam claramente visíveis, descritos ou inferíveis com boa segurança.
+- Em cartografia venosa de membros inferiores, linhas/trajetos em vermelho sobre veias safenas, tributárias ou varicosidades devem ser interpretados como refluxo/insuficiência venosa quando a legenda ou a convenção gráfica do mapa não indicar outra coisa.
+- Não descreva o vermelho apenas como "marcação vermelha"; traduza para achado diagnóstico: refluxo em veia safena magna/parva, tributárias varicosas ou segmento correspondente.
+- Associe medidas ao local anatômico e ao significado provável: medidas em mm junto ao trajeto venoso indicam calibre/diâmetro naquele segmento; medidas longitudinais em cm indicam extensão do segmento mapeado/refluxivo quando aplicável.
+- Ao citar medidas, descreva onde elas estão: por exemplo segmento proximal da safena, coxa, joelho, perna/crural, distal, região maleolar ou tributária, conforme o desenho permitir.
+- Procure lateralidade em marcações como D, E, direito, esquerdo, right, left ou pela orientação anatômica padronizada do desenho quando houver segurança. Não confunda "M" com lateralidade; em mapas de perna, "M" geralmente indica face medial.
 - Se a lateralidade for informada nos metadados do exame, use essa lateralidade como dado do pedido e integre ao laudo.
-- Se a lateralidade nao estiver visivel nem informada, nao escreva "lateralidade nao determinavel" no laudo_tecnico; apenas omita lateralidade ou diga "face medial de membro inferior" quando isso for o achado visivel.
-- Em cartografia arterial cervical/carotidea com desenho frontal bilateral pareado, use a convencao anatomica frontal: estruturas no lado esquerdo da imagem correspondem ao lado direito do paciente, e estruturas no lado direito da imagem correspondem ao lado esquerdo do paciente, salvo rotulo/legenda contraria.
-- Para carótidas em esquema frontal bilateral: eixo desenhado à esquerda da imagem = carotida direita do paciente; eixo desenhado à direita da imagem = carotida esquerda do paciente.
-- Nesses esquemas carotideos, se houver placa ulcerada/estenose em ACI no lado esquerdo da imagem e stent/hiperplasia no lado direito da imagem, descreva como placa ulcerada/estenose em ACI direita e stent/hiperplasia no eixo carotideo esquerdo, salvo indicacao contraria.
-- Se houver indicacao de ulcera, descreva como achado clinico-topografico relacionado ao segmento distal/maleolar quando a localizacao for visivel.
-- No "laudo_tecnico", cite problemas, achados positivos, interpretacao vascular, topografia, lateralidade, medidas e informacoes clinicamente relevantes encontrados no material.
-- Nao liste estruturas normais, achados ausentes, possibilidades genericas, limitacoes longas ou o que nao foi encontrado.
-- Nao use floreios, frases de efeito, explicacoes didaticas ou texto defensivo dentro do "laudo_tecnico".
-- Se nao houver achado relevante identificavel, escreva apenas: "Sem achados vasculares relevantes identificáveis no material analisado."
-- Quando houver incerteza, descreva como "sugestivo" ou "nao determinavel pela imagem estatica".
-- Inclua observacao de revisao por medico habilitado.
-- Use linguagem medica clara, objetiva, elegante e compativel com laudo tecnico de especialista.
-- A conclusao deve sintetizar a interpretacao clinico-vascular, priorizando relevancia diagnostica e limitacoes do material.
+- Se a lateralidade não estiver visível nem informada, não escreva "lateralidade não determinável" no laudo_tecnico; apenas omita lateralidade ou diga "face medial de membro inferior" quando isso for o achado visível.
+- Em cartografia arterial cervical/carotídea com desenho frontal bilateral pareado, use a convenção anatômica frontal: estruturas no lado esquerdo da imagem correspondem ao lado direito do paciente, e estruturas no lado direito da imagem correspondem ao lado esquerdo do paciente, salvo rótulo/legenda contrária.
+- Para carótidas em esquema frontal bilateral: eixo desenhado à esquerda da imagem = carótida direita do paciente; eixo desenhado à direita da imagem = carótida esquerda do paciente.
+- Nesses esquemas carotídeos, se houver placa ulcerada/estenose em ACI no lado esquerdo da imagem e stent/hiperplasia no lado direito da imagem, descreva como placa ulcerada/estenose em ACI direita e stent/hiperplasia no eixo carotídeo esquerdo, salvo indicação contrária.
+- Se houver indicação de úlcera, descreva como achado clínico-topográfico relacionado ao segmento distal/maleolar quando a localização for visível.
+- No "laudo_tecnico", cite problemas, achados positivos, interpretação vascular, topografia, lateralidade, medidas e informações clinicamente relevantes encontrados no material.
+- Não liste estruturas normais, achados ausentes, possibilidades genéricas, limitações longas ou o que não foi encontrado.
+- Não use floreios, frases de efeito, explicações didáticas ou texto defensivo dentro do "laudo_tecnico".
+- Se não houver achado relevante identificável, escreva apenas: "Sem achados vasculares relevantes identificáveis no material analisado."
+- Quando houver incerteza, descreva como "sugestivo" ou "não determinável pela imagem estática".
+- Inclua observação de revisão por médico habilitado.
+- Use linguagem médica clara, objetiva, elegante e compatível com laudo técnico de especialista.
+- A conclusão deve sintetizar a interpretação clínico-vascular, priorizando relevância diagnóstica e limitações do material.
 `;
 
   const prompt = `
-Analise o material enviado e gere um laudo tecnico medico. Nao transcreva apenas o que esta escrito: use os elementos visuais e textuais como base para interpretacao angiologica.
+Analise o material enviado e gere um laudo técnico médico. Não transcreva apenas o que está escrito: use os elementos visuais e textuais como base para interpretação angiológica.
 
 Dados do exame:
 ${JSON.stringify(meta, null, 2)}
@@ -298,10 +298,10 @@ ${JSON.stringify({
 Formato esperado:
 {
   "titulo": "Laudo de Cartografia Vascular",
-  "introducao": "Nome do exame, equipamento e transdutor quando disponiveis; se ausentes, informar como nao especificado no material analisado.",
-  "laudo_tecnico": "Analise tecnica medica, rica e objetiva, com interpretacao vascular dos achados positivos, topografia, lateralidade, segmentos e medidas relevantes.",
-  "conclusao": "Conclusao clinico-vascular objetiva, priorizando os achados principais, sem inventar dados ausentes.",
-  "observacoes": "Reforco de que o laudo deve ser revisado e validado por medico habilitado."
+  "introducao": "Nome do exame, equipamento e transdutor quando disponíveis; se ausentes, informar como não especificado no material analisado.",
+  "laudo_tecnico": "Análise técnica médica, rica e objetiva, com interpretação vascular dos achados positivos, topografia, lateralidade, segmentos e medidas relevantes.",
+  "conclusao": "Conclusão clínico-vascular objetiva, priorizando os achados principais, sem inventar dados ausentes.",
+  "observacoes": "Reforço de que o laudo deve ser revisado e validado por médico habilitado."
 }
 `;
 
