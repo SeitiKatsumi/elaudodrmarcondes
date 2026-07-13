@@ -47,7 +47,14 @@ MAX_UPLOAD_MB=50
 
 `OPENAI_API_KEY`, `OPENAI_MODEL` e `OPENAI_ENABLED` podem ser configurados pelo `.env` ou pela tela **Configuracoes** no painel administrativo. Quando a OpenAI estiver ativada, a aplicacao usa a Responses API com entrada de imagem em base64 para gerar o laudo. Se a chamada falhar, o sistema usa automaticamente o gerador heuristico local como fallback.
 
-A tela **Configuracoes** tambem possui um campo editavel chamado **Prompt do agente gerador do laudo**. Use esse campo para enriquecer as instrucoes clinicas, tecnicas e de estilo do laudo sem alterar o codigo.
+A tela **Configuracoes** possui controles editaveis para direcionar o agente sem alterar o codigo:
+
+- **Nivel de detalhamento do laudo**: objetivo, equilibrado ou detalhado.
+- **Prompt macro do agente**: define o papel clinico do modelo e o objetivo geral do laudo.
+- **Prompt de nuances tecnicas**: define regras de interpretacao, estilo, lateralidade, medidas e preferencias do Dr. Marcondes.
+- **Prompt legado complementar**: mantido para compatibilidade com configuracoes anteriores.
+
+As instrucoes configuradas no painel sao enviadas como diretrizes prioritarias para a OpenAI Responses API. O sistema continua exigindo JSON estruturado e revisao por medico habilitado.
 
 ## Rodar localmente
 

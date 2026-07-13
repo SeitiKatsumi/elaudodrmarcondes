@@ -432,6 +432,14 @@ function renderSettings(saved = false, error = "") {
             <option value="custom">Outro modelo</option>
           </select>
         </label>
+        <label>
+          Nivel de detalhamento do laudo
+          <select name="report_detail_level">
+            <option value="detalhado" ${settings.report_detail_level === "detalhado" ? "selected" : ""}>Detalhado e rico</option>
+            <option value="equilibrado" ${settings.report_detail_level === "equilibrado" ? "selected" : ""}>Equilibrado</option>
+            <option value="objetivo" ${settings.report_detail_level === "objetivo" ? "selected" : ""}>Objetivo</option>
+          </select>
+        </label>
         <label class="full hidden" id="customModelWrap">
           Nome do modelo personalizado
           <input name="custom_model" placeholder="ex: gpt-5.5">
@@ -445,8 +453,16 @@ function renderSettings(saved = false, error = "") {
           Remover chave salva
         </label>
         <label class="full">
-          Prompt do agente gerador do laudo
-          <textarea name="report_agent_prompt" style="min-height:220px">${settings.report_agent_prompt || ""}</textarea>
+          Prompt macro do agente
+          <textarea name="report_macro_prompt" style="min-height:180px">${settings.report_macro_prompt || ""}</textarea>
+        </label>
+        <label class="full">
+          Prompt de nuances tecnicas e preferencias do Dr. Marcondes
+          <textarea name="report_nuance_prompt" style="min-height:260px">${settings.report_nuance_prompt || settings.report_agent_prompt || ""}</textarea>
+        </label>
+        <label class="full">
+          Prompt legado complementar
+          <textarea name="report_agent_prompt" style="min-height:140px">${settings.report_agent_prompt || ""}</textarea>
         </label>
         ${saved ? "<p style='color: var(--green)'>Configurações salvas.</p>" : ""}
         ${error ? `<p style="color: var(--danger)">${error}</p>` : ""}
@@ -457,6 +473,7 @@ function renderSettings(saved = false, error = "") {
         <p class="muted">Quando ativado, o sistema envia a imagem para a OpenAI Responses API usando entrada visual em base64 e pede um JSON estruturado de laudo. Se a chamada falhar, o laudo ainda é gerado pelo motor heurístico local.</p>
         <p><b>Status da chave:</b> ${settings.openai_api_key_configured ? "configurada" : "não configurada"}</p>
         <p><b>Modelo atual:</b> ${settings.openai_model || "-"}</p>
+        <p><b>Detalhamento:</b> ${settings.report_detail_level || "detalhado"}</p>
         <pre class="report">Variaveis equivalentes no .env:
 OPENAI_API_KEY=sk-...
 OPENAI_MODEL=${settings.openai_model || "gpt-5.5"}
@@ -480,6 +497,9 @@ OPENAI_ENABLED=${settings.openai_enabled ? "true" : "false"}</pre>
           openai_model: selected === "custom" ? custom : selected,
           openai_api_key: form.get("openai_api_key"),
           clear_openai_api_key: form.get("clear_openai_api_key") === "on",
+          report_detail_level: form.get("report_detail_level"),
+          report_macro_prompt: form.get("report_macro_prompt"),
+          report_nuance_prompt: form.get("report_nuance_prompt"),
           report_agent_prompt: form.get("report_agent_prompt")
         })
       });

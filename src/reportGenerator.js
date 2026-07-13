@@ -210,6 +210,17 @@ function normalizeReport(report) {
   };
 }
 
+function detailGuidance(level) {
+  const normalized = String(level || "detalhado").toLowerCase();
+  if (normalized === "objetivo") {
+    return "Nivel de detalhamento: objetivo. Produza texto direto, sem floreios, mas inclua diagnostico topografico, lateralidade, segmentos e medidas relevantes. Laudo tecnico sugerido entre 700 e 1100 caracteres quando houver achados.";
+  }
+  if (normalized === "equilibrado") {
+    return "Nivel de detalhamento: equilibrado. Produza analise completa sem excesso, com diagnostico, topografia, lateralidade, segmentos e medidas relevantes. Laudo tecnico sugerido entre 1000 e 1600 caracteres quando houver achados.";
+  }
+  return "Nivel de detalhamento: detalhado. Produza laudo rico e clinicamente util, com raciocinio vascular, topografia, lateralidade, segmentos, medidas, interpretacao e limitacoes relevantes. Laudo tecnico sugerido entre 1500 e 2400 caracteres quando houver achados.";
+}
+
 async function generateOpenAIReport(meta, visual, options, openaiSettings) {
   const files = options.files && options.files.length
     ? options.files
@@ -230,8 +241,13 @@ async function generateOpenAIReport(meta, visual, options, openaiSettings) {
       detail: "high"
     };
   });
-  const prompt = `
-Voce atua como especialista em Angiologia e Cirurgia Vascular, com foco em interpretacao de cartografia vascular, mapeamento vascular e documentacao diagnostica vascular. Sua tarefa nao e apenas ler ou resumir o documento: voce deve interpretar criticamente todos os elementos visuais e textuais enviados e redigir um laudo tecnico medico estruturado em portugues do Brasil.
+  const instructions = `
+${openaiSettings.reportMacroPrompt || "Voce atua como especialista em Angiologia e Cirurgia Vascular, com foco em interpretacao de cartografia vascular, mapeamento vascular e documentacao diagnostica vascular."}
+
+Diretrizes configuradas pelo Dr. Marcondes:
+${openaiSettings.reportNuancePrompt || openaiSettings.reportAgentPrompt || "Sem diretrizes adicionais."}
+
+${detailGuidance(openaiSettings.reportDetailLevel)}
 
 Regras obrigatorias:
 - Retorne somente JSON valido, sem markdown.
@@ -251,8 +267,7 @@ Regras obrigatorias:
 - Para carótidas em esquema frontal bilateral: eixo desenhado à esquerda da imagem = carotida direita do paciente; eixo desenhado à direita da imagem = carotida esquerda do paciente.
 - Nesses esquemas carotideos, se houver placa ulcerada/estenose em ACI no lado esquerdo da imagem e stent/hiperplasia no lado direito da imagem, descreva como placa ulcerada/estenose em ACI direita e stent/hiperplasia no eixo carotideo esquerdo, salvo indicacao contraria.
 - Se houver indicacao de ulcera, descreva como achado clinico-topografico relacionado ao segmento distal/maleolar quando a localizacao for visivel.
-- O campo "laudo_tecnico" deve ser sucinto, direto e conter no maximo 512 caracteres.
-- No "laudo_tecnico", cite apenas problemas, achados positivos e informacoes clinicamente relevantes encontrados no material.
+- No "laudo_tecnico", cite problemas, achados positivos, interpretacao vascular, topografia, lateralidade, medidas e informacoes clinicamente relevantes encontrados no material.
 - Nao liste estruturas normais, achados ausentes, possibilidades genericas, limitacoes longas ou o que nao foi encontrado.
 - Nao use floreios, frases de efeito, explicacoes didaticas ou texto defensivo dentro do "laudo_tecnico".
 - Se nao houver achado relevante identificavel, escreva apenas: "Sem achados vasculares relevantes identificáveis no material analisado."
@@ -260,12 +275,13 @@ Regras obrigatorias:
 - Inclua observacao de revisao por medico habilitado.
 - Use linguagem medica clara, objetiva, elegante e compativel com laudo tecnico de especialista.
 - A conclusao deve sintetizar a interpretacao clinico-vascular, priorizando relevancia diagnostica e limitacoes do material.
+`;
+
+  const prompt = `
+Analise o material enviado e gere um laudo tecnico medico. Nao transcreva apenas o que esta escrito: use os elementos visuais e textuais como base para interpretacao angiologica.
 
 Dados do exame:
 ${JSON.stringify(meta, null, 2)}
-
-Prompt adicional do agente gerador do laudo:
-${openaiSettings.reportAgentPrompt || "Sem instrucoes adicionais."}
 
 Resumo visual computacional:
 ${JSON.stringify({
@@ -283,8 +299,8 @@ Formato esperado:
 {
   "titulo": "Laudo de Cartografia Vascular",
   "introducao": "Nome do exame, equipamento e transdutor quando disponiveis; se ausentes, informar como nao especificado no material analisado.",
-  "laudo_tecnico": "Texto direto, com no maximo 512 caracteres, citando apenas achados positivos relevantes e problemas encontrados.",
-  "conclusao": "Conclusao clinico-vascular objetiva, com no maximo 256 caracteres, sem inventar dados ausentes.",
+  "laudo_tecnico": "Analise tecnica medica, rica e objetiva, com interpretacao vascular dos achados positivos, topografia, lateralidade, segmentos e medidas relevantes.",
+  "conclusao": "Conclusao clinico-vascular objetiva, priorizando os achados principais, sem inventar dados ausentes.",
   "observacoes": "Reforco de que o laudo deve ser revisado e validado por medico habilitado."
 }
 `;
@@ -297,6 +313,7 @@ Formato esperado:
     },
     body: JSON.stringify({
       model: openaiSettings.model,
+      instructions,
       input: [
         {
           role: "user",
